@@ -235,6 +235,7 @@ def plot_with_labels(low_dim_embs, labels, filename='tsne.png'):
 try:
   from sklearn.manifold import TSNE
   import matplotlib.pyplot as plt
+  plt.switch_backend('agg') # https://github.com/matplotlib/matplotlib/issues/3466/
 
   tsne = TSNE(perplexity=30, n_components=2, init='pca', n_iter=5000)
   plot_only = 500
