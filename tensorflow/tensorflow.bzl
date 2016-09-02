@@ -677,7 +677,7 @@ def tf_custom_op_library(name, srcs=[], gpu_srcs=[], deps=[]):
   )
 
 def tf_extension_linkopts():
-  return []  # No extension link opts
+  return ["-lrt"] # https://github.com/tensorflow/tensorflow/issues/121
 
 def tf_extension_copts():
   return []  # No extension c opts
