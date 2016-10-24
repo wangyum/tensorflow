@@ -31,6 +31,7 @@ estimator = LinearClassifier(
    feature_columns=[occupation, education_x_occupation],
    optimizer=tf.contrib.linear_optimizer.SDCAOptimizer(
      example_id_column='example_id',
+     num_loss_partitions=...,
      symmetric_l2_regularization=2.0
    ))
 
@@ -57,11 +58,9 @@ Input of `fit` and `evaluate` should have following features,
     Both features' `value` must be a `SparseTensor`.
   - if `column` is a `RealValuedColumn`, a feature with `key=column.name`
     whose `value` is a `Tensor`.
-  - if `feature_columns` is `None`, then `input` must contains only real
-    valued `Tensor`.
 - - -
 
-#### `tf.contrib.learn.LinearClassifier.__init__(feature_columns, model_dir=None, n_classes=2, weight_column_name=None, optimizer=None, gradient_clip_norm=None, enable_centered_bias=True, config=None)` {#LinearClassifier.__init__}
+#### `tf.contrib.learn.LinearClassifier.__init__(feature_columns, model_dir=None, n_classes=2, weight_column_name=None, optimizer=None, gradient_clip_norm=None, enable_centered_bias=False, _joint_weight=False, config=None, feature_engineering_fn=None)` {#LinearClassifier.__init__}
 
 Construct a `LinearClassifier` estimator object.
 
@@ -87,7 +86,16 @@ Construct a `LinearClassifier` estimator object.
 *  <b>`enable_centered_bias`</b>: A bool. If True, estimator will learn a centered
     bias variable for each class. Rest of the model structure learns the
     residual after centered bias.
+  _joint_weight: If True, the weights for all columns will be stored in a
+    single (possibly partitioned) variable. It's more efficient, but it's
+    incompatible with SDCAOptimizer, and requires all feature columns are
+    sparse and use the 'sum' combiner.
+
 *  <b>`config`</b>: `RunConfig` object to configure the runtime settings.
+*  <b>`feature_engineering_fn`</b>: Feature engineering function. Takes features and
+                    targets which are the output of `input_fn` and
+                    returns features and targets which will be fed
+                    into the model.
 
 ##### Returns:
 
@@ -103,7 +111,11 @@ Construct a `LinearClassifier` estimator object.
 
 #### `tf.contrib.learn.LinearClassifier.bias_` {#LinearClassifier.bias_}
 
+DEPRECATED FUNCTION
 
+THIS FUNCTION IS DEPRECATED. It will be removed after 2016-10-30.
+Instructions for updating:
+This method will be removed after the deprecation date. To inspect variables, use get_variable_names() and get_variable_value().
 
 
 - - -
@@ -122,9 +134,9 @@ See evaluable.Evaluable.
 
 - - -
 
-#### `tf.contrib.learn.LinearClassifier.export(export_dir, signature_fn=None, input_fn=None, default_batch_size=1, exports_to_keep=None)` {#LinearClassifier.export}
+#### `tf.contrib.learn.LinearClassifier.export(export_dir, input_fn=None, input_feature_key=None, use_deprecated_input_fn=True, signature_fn=None, default_batch_size=1, exports_to_keep=None)` {#LinearClassifier.export}
 
-See BasEstimator.export.
+See BaseEstimator.export.
 
 
 - - -
@@ -150,22 +162,52 @@ See trainable.Trainable.
 
 - - -
 
-#### `tf.contrib.learn.LinearClassifier.predict(x=None, input_fn=None, batch_size=None, as_iterable=False)` {#LinearClassifier.predict}
+#### `tf.contrib.learn.LinearClassifier.get_variable_value(name)` {#LinearClassifier.get_variable_value}
 
-Runs inference to determine the predicted class.
+
 
 
 - - -
 
-#### `tf.contrib.learn.LinearClassifier.predict_proba(x=None, input_fn=None, batch_size=None, outputs=None, as_iterable=False)` {#LinearClassifier.predict_proba}
+#### `tf.contrib.learn.LinearClassifier.model_dir` {#LinearClassifier.model_dir}
 
-Runs inference to determine the class probability predictions.
+
+
+
+- - -
+
+#### `tf.contrib.learn.LinearClassifier.predict(*args, **kwargs)` {#LinearClassifier.predict}
+
+Runs inference to determine the predicted class. (deprecated arguments)
+
+SOME ARGUMENTS ARE DEPRECATED. They will be removed after 2016-09-15.
+Instructions for updating:
+The default behavior of predict() is changing. The default value for
+as_iterable will change to True, and then the flag will be removed
+altogether. The behavior of this flag is described below.
+
+
+- - -
+
+#### `tf.contrib.learn.LinearClassifier.predict_proba(*args, **kwargs)` {#LinearClassifier.predict_proba}
+
+Runs inference to determine the class probability predictions. (deprecated arguments)
+
+SOME ARGUMENTS ARE DEPRECATED. They will be removed after 2016-09-15.
+Instructions for updating:
+The default behavior of predict() is changing. The default value for
+as_iterable will change to True, and then the flag will be removed
+altogether. The behavior of this flag is described below.
 
 
 - - -
 
 #### `tf.contrib.learn.LinearClassifier.weights_` {#LinearClassifier.weights_}
 
+DEPRECATED FUNCTION
 
+THIS FUNCTION IS DEPRECATED. It will be removed after 2016-10-30.
+Instructions for updating:
+This method will be removed after the deprecation date. To inspect variables, use get_variable_names() and get_variable_value().
 
 

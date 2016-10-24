@@ -151,7 +151,9 @@ class Variable(object):
                caching_device=None,
                name=None,
                variable_def=None,
-               dtype=None):
+               dtype=None,
+               expected_shape=None,
+               import_scope=None):
     """Creates a new variable with value `initial_value`.
 
     The new variable is added to the graph collections listed in `collections`,
@@ -191,6 +193,10 @@ class Variable(object):
       dtype: If set, initial_value will be converted to the given type.
         If `None`, either the datatype will be kept (if `initial_value` is
         a Tensor), or `convert_to_tensor` will decide.
+      expected_shape: A TensorShape. If set, initial_value is expected
+        to have this shape.
+      import_scope: Optional `string`. Name scope to add to the
+        `Variable.` Only used when initializing from protocol buffer.
 
     Raises:
       ValueError: If both `variable_def` and initial_value are specified.
@@ -202,7 +208,7 @@ class Variable(object):
       if initial_value:
         raise ValueError("variable_def and initial_value are mutually "
                          "exclusive.")
-      self._init_from_proto(variable_def)
+      self._init_from_proto(variable_def, import_scope=import_scope)
     else:
       # Create from initial_value.
       self._init_from_args(
@@ -212,7 +218,8 @@ class Variable(object):
           validate_shape=validate_shape,
           caching_device=caching_device,
           name=name,
-          dtype=dtype)
+          dtype=dtype,
+          expected_shape=expected_shape)
 
   def _init_from_args(self,
                       initial_value=None,
@@ -221,7 +228,8 @@ class Variable(object):
                       validate_shape=True,
                       caching_device=None,
                       name=None,
-                      dtype=None):
+                      dtype=None,
+                      expected_shape=None):
     """Creates a new variable from arguments.
 
     Args:
@@ -250,6 +258,8 @@ class Variable(object):
         If None, either the datatype will be kept (if initial_value is
        a Tensor) or float32 will be used (if it is a Python object convertible
        to a Tensor).
+      expected_shape: A TensorShape. If set, initial_value is expected
+        to have this shape.
 
     Raises:
       ValueError: If the initial value is not specified, or does not have a
@@ -277,24 +287,40 @@ class Variable(object):
         # Get the initial value from a callable function. The real shape of the
         # variable will be set later, since under the init_from_fn case, the
         # shape won't be known until after the function is invoked.
+        def full_shape_to_list(shape):
+          """Returns shape as a list if shape is fully defined."""
+          if shape and shape.is_fully_defined():
+            return shape.as_list()
+          else:
+            return []
+
+        def assert_expected_shape():
+          """Asserts that the initial value has the expected shape."""
+          if expected_shape:
+            expected_shape.assert_is_compatible_with(
+                self._initial_value.get_shape())
+
         if init_from_fn:
+          expected_shape_list = full_shape_to_list(expected_shape)
           self._variable = state_ops.variable_op(
-              [], dtype.base_dtype, set_shape=False, name=name)
+              expected_shape_list, dtype.base_dtype, set_shape=False, name=name)
           with ops.colocate_with(self._variable.op):
             with ops.name_scope("Initializer"):
               # Colocate the tensors created by the initial_value() function
               # with the variable itself.
               self._initial_value = ops.convert_to_tensor(
                   initial_value(), name="initial_value", dtype=dtype)
+              assert_expected_shape()
 
         # Or get the initial value from a Tensor or Python object.
         else:
           self._initial_value = ops.convert_to_tensor(
               initial_value, name="initial_value", dtype=dtype)
+          assert_expected_shape()
           # In this case, the variable op can't be created until after the
           # initial_value has been converted to a Tensor with a known type.
           self._variable = state_ops.variable_op(
-              [],
+              full_shape_to_list(self._initial_value.get_shape()),
               self._initial_value.dtype.base_dtype,
               set_shape=False,
               name=name)
@@ -330,18 +356,25 @@ class Variable(object):
     self._caching_device = caching_device
     self._save_slice_info = None
 
-  def _init_from_proto(self, variable_def):
+  def _init_from_proto(self, variable_def, import_scope=None):
     """Creates a new variable from `VariableDef` protocol buffer.
 
     Args:
       variable_def: `VariableDef` protocol buffer.
+      import_scope: Optional `string`. Name scope to add.
     """
     assert isinstance(variable_def, variable_pb2.VariableDef)
     # Create from variable_def.
     g = ops.get_default_graph()
-    self._variable = g.as_graph_element(variable_def.variable_name)
-    self._initializer_op = g.as_graph_element(variable_def.initializer_name)
-    self._snapshot = g.as_graph_element(variable_def.snapshot_name)
+    self._variable = g.as_graph_element(
+        ops.prepend_name_scope(variable_def.variable_name,
+                               import_scope=import_scope))
+    self._initializer_op = g.as_graph_element(
+        ops.prepend_name_scope(variable_def.initializer_name,
+                               import_scope=import_scope))
+    self._snapshot = g.as_graph_element(
+        ops.prepend_name_scope(variable_def.snapshot_name,
+                               import_scope=import_scope))
     if variable_def.HasField("save_slice_info_def"):
       self._save_slice_info = Variable.SaveSliceInfo(
           save_slice_info_def=variable_def.save_slice_info_def)
@@ -618,6 +651,11 @@ class Variable(object):
     def _run_op(a, *args):
       # pylint: disable=protected-access
       return getattr(ops.Tensor, operator)(a._AsTensor(), *args)
+    # Propagate __doc__ to wrapper
+    try:
+      _run_op.__doc__ = getattr(ops.Tensor, operator).__doc__
+    except AttributeError:
+      pass
 
     setattr(Variable, operator, _run_op)
 
@@ -668,35 +706,59 @@ class Variable(object):
     """
     return self._variable.get_shape()
 
-  def to_proto(self):
+  def to_proto(self, export_scope=None):
     """Converts a `Variable` to a `VariableDef` protocol buffer.
 
+    Args:
+      export_scope: Optional `string`. Name scope to remove.
+
     Returns:
-      A `VariableDef` protocol buffer.
+      A `VariableDef` protocol buffer, or `None` if the `Variable` is not
+      in the specified name scope.
     """
-    var_def = variable_pb2.VariableDef()
-    var_def.variable_name = self._variable.name
-    var_def.initializer_name = self.initializer.name
-    var_def.snapshot_name = self._snapshot.name
-    if self._save_slice_info:
-      var_def.save_slice_info_def.MergeFrom(self._save_slice_info.to_proto())
-    return var_def
+    if (export_scope is None or
+        self._variable.name.startswith(export_scope)):
+      var_def = variable_pb2.VariableDef()
+      var_def.variable_name = ops.strip_name_scope(
+          self._variable.name, export_scope)
+      var_def.initializer_name = ops.strip_name_scope(
+          self.initializer.name, export_scope)
+      var_def.snapshot_name = ops.strip_name_scope(
+          self._snapshot.name, export_scope)
+      if self._save_slice_info:
+        var_def.save_slice_info_def.MergeFrom(self._save_slice_info.to_proto(
+            export_scope=export_scope))
+      return var_def
+    else:
+      return None
 
   @staticmethod
-  def from_proto(variable_def):
+  def from_proto(variable_def, import_scope=None):
     """Returns a `Variable` object created from `variable_def`."""
-    return Variable(variable_def=variable_def)
+    return Variable(variable_def=variable_def,
+                    import_scope=import_scope)
 
-  # Experimental support for saving variables as slices of a larger variable.
   class SaveSliceInfo(object):
-    """Information on how to save this Variable as a slice."""
+    """Information on how to save this Variable as a slice.
+
+    Provides internal support for saving variables as slices of a larger
+    variable.  This API is not public and is subject to change.
+
+    Available properties:
+
+    * full_name
+    * full_shape
+    * var_offset
+    * var_shape
+    """
 
     def __init__(self,
                  full_name=None,
                  full_shape=None,
                  var_offset=None,
                  var_shape=None,
-                 save_slice_info_def=None):
+                 save_slice_info_def=None,
+                 import_scope=None):
       """Create a `SaveSliceInfo`.
 
       Args:
@@ -710,10 +772,13 @@ class Variable(object):
           recreates the SaveSliceInfo object its contents.
           `save_slice_info_def` and other arguments are mutually
           exclusive.
+        import_scope: Optional `string`. Name scope to add. Only used
+          when initializing from protocol buffer.
       """
       if save_slice_info_def:
         assert isinstance(save_slice_info_def, variable_pb2.SaveSliceInfoDef)
-        self.full_name = save_slice_info_def.full_name
+        self.full_name = ops.prepend_name_scope(
+            save_slice_info_def.full_name, import_scope=import_scope)
         self.full_shape = [i for i in save_slice_info_def.full_shape]
         self.var_offset = [i for i in save_slice_info_def.var_offset]
         self.var_shape = [i for i in save_slice_info_def.var_shape]
@@ -732,17 +797,30 @@ class Variable(object):
       ])
       return full_shape_str + sl_spec
 
-    def to_proto(self):
-      """Returns a SaveSliceInfoDef() proto."""
-      save_slice_info_def = variable_pb2.SaveSliceInfoDef()
-      save_slice_info_def.full_name = self.full_name
-      for i in self.full_shape:
-        save_slice_info_def.full_shape.append(i)
-      for i in self.var_offset:
-        save_slice_info_def.var_offset.append(i)
-      for i in self.var_shape:
-        save_slice_info_def.var_shape.append(i)
-      return save_slice_info_def
+    def to_proto(self, export_scope=None):
+      """Returns a SaveSliceInfoDef() proto.
+
+      Args:
+        export_scope: Optional `string`. Name scope to remove.
+
+      Returns:
+        A `SaveSliceInfoDef` protocol buffer, or None if the `Variable` is not
+        in the specified name scope.
+      """
+      if (export_scope is None or
+          self.full_name.startswith(export_scope)):
+        save_slice_info_def = variable_pb2.SaveSliceInfoDef()
+        save_slice_info_def.full_name = ops.strip_name_scope(
+            self.full_name, export_scope)
+        for i in self.full_shape:
+          save_slice_info_def.full_shape.append(i)
+        for i in self.var_offset:
+          save_slice_info_def.var_offset.append(i)
+        for i in self.var_shape:
+          save_slice_info_def.var_shape.append(i)
+        return save_slice_info_def
+      else:
+        return None
 
   def _set_save_slice_info(self, save_slice_info):
     """Sets the slice info for this `Variable`.
@@ -752,31 +830,115 @@ class Variable(object):
     """
     self._save_slice_info = save_slice_info
 
+  def _get_save_slice_info(self):
+    return self._save_slice_info
 
-class _PartitionedVariable(object):
-  """Wrapper around a list of partitioned `Variable`.
 
-  May get merged into the main `Variable` class.
-  """
+class PartitionedVariable(object):
+  """A container for partitioned `Variable` objects."""
+
+  class PartitionedVariableIterator(object):
+    """An iterator that allows accessing the underlying `Variable` objects.
+
+    This iterator is necessary to control order of access when Variables
+    are not partitioned in a standard way along a single axis.
+
+    Allows e.g. `list(partitioned_variable)` to return a proper list.
+    """
+
+    def __init__(self, partitioned_variable):
+      self._ix = 0
+      self._partitioned_variable = partitioned_variable
+
+    def __iter__(self):
+      return self
+
+    def __next__(self):  # For python3 compatibility.
+      return self.next()
+
+    def next(self):
+      # pylint: disable=protected-access
+      if self._ix >= len(self._partitioned_variable._variable_list):
+        raise StopIteration()
+      variable = self._partitioned_variable._variable_list[self._ix]
+      # pylint: enable=protected-access
+      self._ix += 1
+      return variable
 
   def __init__(self, name, shape, dtype, variable_list, partitions):
     """Creates a new partitioned variable wrapper.
 
+    Variables passed via the variable_list must contain a save_slice_info
+    field.  Concatenation and iteration is in lexicographic order according
+    to the var_offset property of the save_slice_info.
+
     Args:
-      name: Overall name of the variables.
-      shape: Overall shape of the variables.
+      name: String. Overall name of the variables.
+      shape: List of integers.  Overall shape of the variables.
       dtype: Type of the variables.
       variable_list: List of `Variable` that comprise this partitioned variable.
-      partitions: List of number of partitions for each dimension.
+      partitions: List of integers.  Number of partitions for each dimension.
+
+    Raises:
+      TypeError: If `variable_list` is not a list of `Variable` objects, or
+        `partitions` is not a list.
+      ValueError: If `variable_list` is empty, or the `Variable` shape
+        information does not match `shape`, or `partitions` has invalid values.
     """
+    if not isinstance(variable_list, (list, tuple)):
+      raise TypeError(
+          "variable_list is not a list or tuple: %s" % variable_list)
+    if not isinstance(partitions, (list, tuple)):
+      raise TypeError("partitions is not a list or tuple: %s" % partitions)
+    if not all([p >= 1 for p in partitions]):
+      raise ValueError("partition values must be positive: %s" % partitions)
+    if not variable_list:
+      raise ValueError("variable_list may not be empty")
+    for v in variable_list:
+      if not isinstance(v, Variable):
+        raise TypeError("Not all entries in variable_list are variables: %s"
+                        % variable_list)
+    # Sort the variable_list lexicographically according to var offset value.
+    # pylint: disable=protected-access
+    if not all([v._get_save_slice_info() is not None for v in variable_list]):
+      raise ValueError("All variables must have a save_slice_info available: %s"
+                       % [v.name for v in variable_list])
+    if len(shape) != len(partitions):
+      raise ValueError("len(shape) != len(partitions): %s vs. %s"
+                       % (shape, partitions))
+    if not all([v._get_save_slice_info().full_shape == shape]):
+      raise ValueError(
+          "All variables' full shapes must match shape: %s; "
+          "but full shapes were: %s"
+          % (shape, str([v._get_save_slice_info().full_shape])))
+    self._variable_list = sorted(
+        variable_list, key=lambda v: v._get_save_slice_info().var_offset)
+    # pylint: enable=protected-access
+
     self._name = name
     self._shape = shape
     self._dtype = dtype
-    self._variable_list = variable_list
     self._partitions = partitions
     self._as_tensor = None
 
-  def concat(self):
+  def __iter__(self):
+    """Return an iterable for accessing the underlying partition Variables."""
+    return self.PartitionedVariableIterator(self)
+
+  def __len__(self):
+    num_partition_axes = len(self._partition_axes())
+    if num_partition_axes > 1:
+      raise ValueError("Cannot get a length for %d > 1 partition axes"
+                       % num_partition_axes)
+    return len(self._variable_list)
+
+  def _partition_axes(self):
+    if all([p == 1 for p in self._partitions]):
+      return [0]
+    else:
+      return [i for i, p in enumerate(self._partitions) if p > 1]
+
+  def _concat(self):
     """Returns the overall concatenated value as a `Tensor`.
 
     This is different from using the partitioned variable directly as a tensor
@@ -790,10 +952,13 @@ class _PartitionedVariable(object):
       with ops.name_scope(None):
         return array_ops.identity(self._variable_list[0], name=self._name)
 
-    if all([p < 2 for p in self._partitions]):
-      partition_ix = 0
-    else:
-      partition_ix = [i for i, p in enumerate(self._partitions) if p > 1][0]
+    partition_axes = self._partition_axes()
+
+    if len(partition_axes) > 1:
+      raise NotImplementedError(
+          "Cannot concatenate along more than one dimension: %s.  "
+          "Multi-axis partition concat is not supported" % str(partition_axes))
+    partition_ix = partition_axes[0]
 
     with ops.name_scope(self._name + "/ConcatPartitions/"):
       concatenated = array_ops.concat(partition_ix, self._variable_list)
@@ -815,7 +980,7 @@ class _PartitionedVariable(object):
       # Be sure to cache the concatenated tensor to not do extraneous
       # computations.
       with ops.control_dependencies(None):
-        self._as_tensor = self.concat()
+        self._as_tensor = self._concat()
 
     return self._as_tensor
 
@@ -828,7 +993,7 @@ class _PartitionedVariable(object):
           "of type '%s'" % (dtype.name, v.dtype.name))
     if as_ref:
       raise NotImplementedError(
-          "_PartitionedVariable doesn't support being used as a reference.")
+          "PartitionedVariable doesn't support being used as a reference.")
     else:
       return v.as_tensor()
 
@@ -852,7 +1017,7 @@ class _PartitionedVariable(object):
   def assign(self, value, use_locking=False):
     _ = value, use_locking
     raise NotImplementedError(
-        "assign() has not been implemented for _PartitionedVariable.")
+        "assign() has not been implemented for PartitionedVariable.")
 
 
 def all_variables():
@@ -1070,7 +1235,7 @@ ops.register_tensor_conversion_function(Variable,
 Variable._OverloadAllOperators()
 
 ops.register_tensor_conversion_function(
-    _PartitionedVariable, _PartitionedVariable._TensorConversionFunction)
+    PartitionedVariable, PartitionedVariable._TensorConversionFunction)
 # pylint: enable=protected-access
 
 ops.register_dense_tensor_like_type(Variable)

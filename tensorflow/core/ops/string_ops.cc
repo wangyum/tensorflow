@@ -61,7 +61,7 @@ additional components. Adversaries could try to make their inputs hash to the
 same bucket for a denial-of-service attack or to skew the results. A strong
 hash prevents this by making it dificult, if not infeasible, to compute inputs
 that hash to the same bucket. This comes at a cost of roughly 4x higher compute
-time than tf.string_to_hash_bucket_fast.
+time than `tf.string_to_hash_bucket_fast`.
 
 input: The strings to assign a hash bucket.
 num_buckets: The number of buckets.
@@ -95,7 +95,7 @@ REGISTER_OP("ReduceJoin")
     .Attr("keep_dims: bool = false")
     .Attr("separator: string = ''")
     .Output("output: string")
-    .SetShapeFn(shape_inference::ReductionShape)
+    .SetShapeFn(shape_inference::ReductionShapeForReduceJoin)
     .Doc(R"doc(
 Joins a string Tensor across the given dimensions.
 

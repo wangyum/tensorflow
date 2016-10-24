@@ -34,15 +34,32 @@ from tensorflow.python.ops import array_ops
 from tensorflow.python.ops import check_ops
 from tensorflow.python.ops import control_flow_ops
 from tensorflow.python.ops import math_ops
+from tensorflow.python.ops import nn
 from tensorflow.python.ops import random_ops
 
 
 __all__ = [
     "MultivariateNormalDiag",
+    "MultivariateNormalDiagWithSoftplusStDev",
     "MultivariateNormalCholesky",
     "MultivariateNormalFull",
     "MultivariateNormalDiagPlusVDVT",
 ]
+
+_mvn_prob_note = """
+`x` is a batch vector with compatible shape if `x` is a `Tensor` whose
+shape can be broadcast up to either:
+
+```
+self.batch_shape + self.event_shape
+```
+
+or
+
+```
+[M1,...,Mm] + self.batch_shape + self.event_shape
+```
+"""
 
 
 class _MultivariateNormalOperatorPD(distribution.Distribution):
@@ -95,8 +112,8 @@ class _MultivariateNormalOperatorPD(distribution.Distribution):
   def __init__(self,
                mu,
                cov,
-               validate_args=True,
-               allow_nan_stats=False,
+               validate_args=False,
+               allow_nan_stats=True,
                name="MultivariateNormalCov"):
     """Multivariate Normal distributions on `R^k`.
 
@@ -107,10 +124,10 @@ class _MultivariateNormalOperatorPD(distribution.Distribution):
       mu: Floating point tensor with shape `[N1,...,Nb, k]`, `b >= 0`.
       cov: Instance of `OperatorPDBase` with same `dtype` as `mu` and shape
         `[N1,...,Nb, k, k]`.
-      validate_args: Whether to validate input with asserts.  If `validate_args`
-        is `False`, and the inputs are invalid, correct behavior is not
-        guaranteed.
-      allow_nan_stats:  `Boolean`, default `False`.  If `False`, raise an
+      validate_args: `Boolean`, default `False`.  Whether to validate input
+        with asserts.  If `validate_args` is `False`, and the inputs are
+        invalid, correct behavior is not guaranteed.
+      allow_nan_stats: `Boolean`, default `True`.  If `False`, raise an
         exception if a statistic (e.g. mean/mode/etc...) is undefined for any
         batch member If `True`, batch members with valid parameters leading to
         undefined statistics will return NaN for this statistic.
@@ -119,6 +136,8 @@ class _MultivariateNormalOperatorPD(distribution.Distribution):
     Raises:
       TypeError: If `mu` and `cov` are different dtypes.
     """
+    parameters = locals()
+    parameters.pop("self")
     with ops.name_scope(name) as ns:
       with ops.name_scope("init", values=[mu] + cov.inputs):
         self._mu = array_ops.identity(mu, name="mu")
@@ -127,10 +146,12 @@ class _MultivariateNormalOperatorPD(distribution.Distribution):
         self._mu = self._assert_valid_mu(self._mu)
         super(_MultivariateNormalOperatorPD, self).__init__(
             dtype=self._mu.dtype,
-            parameters={"mu": self._mu, "cov": self._cov},
             is_reparameterized=True,
+            is_continuous=True,
             validate_args=validate_args,
             allow_nan_stats=allow_nan_stats,
+            parameters=parameters,
+            graph_parents=[self._mu] + cov.inputs,
             name=ns)
 
   def _assert_valid_mu(self, mu):
@@ -210,8 +231,8 @@ class _MultivariateNormalOperatorPD(distribution.Distribution):
     # Recall _assert_valid_mu ensures mu and self._cov have same batch shape.
     shape = array_ops.concat(0, [self._cov.vector_shape(), [n]])
     white_samples = random_ops.random_normal(shape=shape,
-                                             mean=0,
-                                             stddev=1,
+                                             mean=0.,
+                                             stddev=1.,
                                              dtype=self.dtype,
                                              seed=seed)
 
@@ -229,6 +250,7 @@ class _MultivariateNormalOperatorPD(distribution.Distribution):
     samples = correlated_samples + self.mu
     return samples
 
+  @distribution_util.AppendDocstring(_mvn_prob_note)
   def _log_prob(self, x):
     # Q:  Why are shape requirements as stated above?
     # A:  The compatible shapes are precisely the ones that will broadcast to
@@ -260,6 +282,7 @@ class _MultivariateNormalOperatorPD(distribution.Distribution):
     log_prob_value.set_shape(output_static_shape)
     return log_prob_value
 
+  @distribution_util.AppendDocstring(_mvn_prob_note)
   def _prob(self, x):
     return math_ops.exp(self.log_prob(x))
 
@@ -282,23 +305,6 @@ class _MultivariateNormalOperatorPD(distribution.Distribution):
 
   def _mode(self):
     return array_ops.identity(self._mu)
-
-
-_prob_note = """
-    `x` is a batch vector with compatible shape if `x` is a `Tensor` whose
-    shape can be broadcast up to either:
-
-    ````
-    self.batch_shape + self.event_shape
-    OR
-    [M1,...,Mm] + self.batch_shape + self.event_shape
-    ```
-
-"""
-distribution_util.append_class_fun_doc(_MultivariateNormalOperatorPD.log_prob,
-                                       doc_str=_prob_note)
-distribution_util.append_class_fun_doc(_MultivariateNormalOperatorPD.prob,
-                                       doc_str=_prob_note)
 
 
 class MultivariateNormalDiag(_MultivariateNormalOperatorPD):
@@ -353,8 +359,8 @@ class MultivariateNormalDiag(_MultivariateNormalOperatorPD):
       self,
       mu,
       diag_stdev,
-      validate_args=True,
-      allow_nan_stats=False,
+      validate_args=False,
+      allow_nan_stats=True,
       name="MultivariateNormalDiag"):
     """Multivariate Normal distributions on `R^k`.
 
@@ -368,10 +374,10 @@ class MultivariateNormalDiag(_MultivariateNormalOperatorPD):
         `b >= 0`.
       diag_stdev: Rank `N + 1` `Tensor` with same `dtype` and shape as `mu`,
         representing the standard deviations.  Must be positive.
-      validate_args: Whether to validate input with asserts.  If `validate_args`
-        is `False`,
+      validate_args: `Boolean`, default `False`.  Whether to validate
+        input with asserts.  If `validate_args` is `False`,
         and the inputs are invalid, correct behavior is not guaranteed.
-      allow_nan_stats:  `Boolean`, default `False`.  If `False`, raise an
+      allow_nan_stats: `Boolean`, default `True`.  If `False`, raise an
         exception if a statistic (e.g. mean/mode/etc...) is undefined for any
         batch member If `True`, batch members with valid parameters leading to
         undefined statistics will return NaN for this statistic.
@@ -380,11 +386,38 @@ class MultivariateNormalDiag(_MultivariateNormalOperatorPD):
     Raises:
       TypeError: If `mu` and `diag_stdev` are different dtypes.
     """
-    cov = operator_pd_diag.OperatorPDSqrtDiag(
-        diag_stdev, verify_pd=validate_args)
+    parameters = locals()
+    parameters.pop("self")
+    with ops.name_scope(name, values=[diag_stdev]) as ns:
+      cov = operator_pd_diag.OperatorPDSqrtDiag(diag_stdev,
+                                                verify_pd=validate_args)
     super(MultivariateNormalDiag, self).__init__(
-        mu, cov, allow_nan_stats=allow_nan_stats, validate_args=validate_args,
-        name=name)
+        mu, cov,
+        allow_nan_stats=allow_nan_stats,
+        validate_args=validate_args,
+        name=ns)
+    self._parameters = parameters
+
+
+class MultivariateNormalDiagWithSoftplusStDev(MultivariateNormalDiag):
+  """MultivariateNormalDiag with `diag_stddev = softplus(diag_stddev)`."""
+
+  def __init__(self,
+               mu,
+               diag_stdev,
+               validate_args=False,
+               allow_nan_stats=True,
+               name="MultivariateNormalDiagWithSoftplusStdDev"):
+    parameters = locals()
+    parameters.pop("self")
+    with ops.name_scope(name, values=[diag_stdev]) as ns:
+      super(MultivariateNormalDiagWithSoftplusStDev, self).__init__(
+          mu=mu,
+          diag_stdev=nn.softplus(diag_stdev),
+          validate_args=validate_args,
+          allow_nan_stats=allow_nan_stats,
+          name=ns)
+    self._parameters = parameters
 
 
 class MultivariateNormalDiagPlusVDVT(_MultivariateNormalOperatorPD):
@@ -459,8 +492,8 @@ class MultivariateNormalDiagPlusVDVT(_MultivariateNormalOperatorPD):
       diag_large,
       v,
       diag_small=None,
-      validate_args=True,
-      allow_nan_stats=False,
+      validate_args=False,
+      allow_nan_stats=True,
       name="MultivariateNormalDiagPlusVDVT"):
     """Multivariate Normal distributions on `R^k`.
 
@@ -488,22 +521,31 @@ class MultivariateNormalDiagPlusVDVT(_MultivariateNormalOperatorPD):
       diag_small:  Rank `n + 1` floating point tensor, shape
         `[N1,...,Nn, k]` `n >= 0`.  Defines the diagonal matrix `D`.  Default
         is `None`, which means `D` will be the identity matrix.
-      validate_args: Whether to validate input with asserts.  If `validate_args`
-        is `False`,
+      validate_args: `Boolean`, default `False`.  Whether to validate input
+        with asserts.  If `validate_args` is `False`,
         and the inputs are invalid, correct behavior is not guaranteed.
-      allow_nan_stats:  `Boolean`, default `False`.  If `False`, raise an
+      allow_nan_stats: `Boolean`, default `True`.  If `False`, raise an
         exception if a statistic (e.g. mean/mode/etc...) is undefined for any
         batch member If `True`, batch members with valid parameters leading to
         undefined statistics will return NaN for this statistic.
       name: The name to give Ops created by the initializer.
     """
-    m = operator_pd_diag.OperatorPDDiag(diag_large, verify_pd=validate_args)
-    cov = operator_pd_vdvt_update.OperatorPDSqrtVDVTUpdate(
-        m, v, diag=diag_small, verify_pd=validate_args,
-        verify_shapes=validate_args)
+    parameters = locals()
+    parameters.pop("self")
+    with ops.name_scope(name, values=[diag_large, v, diag_small]) as ns:
+      cov = operator_pd_vdvt_update.OperatorPDSqrtVDVTUpdate(
+          operator_pd_diag.OperatorPDDiag(
+              diag_large, verify_pd=validate_args),
+          v,
+          diag=diag_small,
+          verify_pd=validate_args,
+          verify_shapes=validate_args)
     super(MultivariateNormalDiagPlusVDVT, self).__init__(
-        mu, cov, allow_nan_stats=allow_nan_stats, validate_args=validate_args,
-        name=name)
+        mu, cov,
+        allow_nan_stats=allow_nan_stats,
+        validate_args=validate_args,
+        name=ns)
+    self._parameters = parameters
 
 
 class MultivariateNormalCholesky(_MultivariateNormalOperatorPD):
@@ -551,16 +593,16 @@ class MultivariateNormalCholesky(_MultivariateNormalOperatorPD):
   dist.pdf(x)
   ```
 
-  Trainable (batch) Choesky matrices can be created with
-  `tf.contrib.distributions.batch_matrix_diag_transform()`
+  Trainable (batch) Cholesky matrices can be created with
+  `tf.contrib.distributions.matrix_diag_transform()`
 
   """
 
   def __init__(self,
                mu,
                chol,
-               validate_args=True,
-               allow_nan_stats=False,
+               validate_args=False,
+               allow_nan_stats=True,
                name="MultivariateNormalCholesky"):
     """Multivariate Normal distributions on `R^k`.
 
@@ -573,10 +615,10 @@ class MultivariateNormalCholesky(_MultivariateNormalOperatorPD):
       chol: `(N+2)-D` `Tensor` with same `dtype` as `mu` and shape
         `[N1,...,Nb, k, k]`.  The upper triangular part is ignored (treated as
         though it is zero), and the diagonal must be positive.
-      validate_args: Whether to validate input with asserts.  If `validate_args`
-        is `False`, and the inputs are invalid, correct behavior is not
-        guaranteed.
-      allow_nan_stats:  `Boolean`, default `False`.  If `False`, raise an
+      validate_args: `Boolean`, default `False`.  Whether to validate input
+        with asserts.  If `validate_args` is `False`, and the inputs are
+        invalid, correct behavior is not guaranteed.
+      allow_nan_stats: `Boolean`, default `True`.  If `False`, raise an
         exception if a statistic (e.g. mean/mode/etc...) is undefined for any
         batch member If `True`, batch members with valid parameters leading to
         undefined statistics will return NaN for this statistic.
@@ -585,13 +627,17 @@ class MultivariateNormalCholesky(_MultivariateNormalOperatorPD):
     Raises:
       TypeError: If `mu` and `chol` are different dtypes.
     """
-    cov = operator_pd_cholesky.OperatorPDCholesky(chol, verify_pd=validate_args)
+    parameters = locals()
+    parameters.pop("self")
+    with ops.name_scope(name, values=[chol]) as ns:
+      cov = operator_pd_cholesky.OperatorPDCholesky(chol,
+                                                    verify_pd=validate_args)
     super(MultivariateNormalCholesky, self).__init__(
-        mu,
-        cov,
+        mu, cov,
         allow_nan_stats=allow_nan_stats,
         validate_args=validate_args,
-        name=name)
+        name=ns)
+    self._parameters = parameters
 
 
 class MultivariateNormalFull(_MultivariateNormalOperatorPD):
@@ -640,8 +686,8 @@ class MultivariateNormalFull(_MultivariateNormalOperatorPD):
   def __init__(self,
                mu,
                sigma,
-               validate_args=True,
-               allow_nan_stats=False,
+               validate_args=False,
+               allow_nan_stats=True,
                name="MultivariateNormalFull"):
     """Multivariate Normal distributions on `R^k`.
 
@@ -652,10 +698,10 @@ class MultivariateNormalFull(_MultivariateNormalOperatorPD):
         `b >= 0`.
       sigma: `(N+2)-D` `Tensor` with same `dtype` as `mu` and shape
         `[N1,...,Nb, k, k]`.  Each batch member must be positive definite.
-      validate_args: Whether to validate input with asserts.  If `validate_args`
-        is `False`, and the inputs are invalid, correct behavior is not
-        guaranteed.
-      allow_nan_stats:  `Boolean`, default `False`.  If `False`, raise an
+      validate_args: `Boolean`, default `False`.  Whether to validate input
+        with asserts.  If `validate_args` is `False`, and the inputs are
+        invalid, correct behavior is not guaranteed.
+      allow_nan_stats: `Boolean`, default `True`.  If `False`, raise an
         exception if a statistic (e.g. mean/mode/etc...) is undefined for any
         batch member If `True`, batch members with valid parameters leading to
         undefined statistics will return NaN for this statistic.
@@ -664,13 +710,16 @@ class MultivariateNormalFull(_MultivariateNormalOperatorPD):
     Raises:
       TypeError: If `mu` and `sigma` are different dtypes.
     """
-    cov = operator_pd_full.OperatorPDFull(sigma, verify_pd=validate_args)
+    parameters = locals()
+    parameters.pop("self")
+    with ops.name_scope(name, values=[sigma]) as ns:
+      cov = operator_pd_full.OperatorPDFull(sigma, verify_pd=validate_args)
     super(MultivariateNormalFull, self).__init__(
-        mu,
-        cov,
+        mu, cov,
         allow_nan_stats=allow_nan_stats,
         validate_args=validate_args,
-        name=name)
+        name=ns)
+    self._parameters = parameters
 
 
 def _kl_mvn_mvn_brute_force(mvn_a, mvn_b, name=None):

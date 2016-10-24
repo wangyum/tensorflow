@@ -27,14 +27,13 @@ import tensorflow as tf
 
 # pylint: disable=wildcard-import,undefined-variable
 from tensorflow.contrib.factorization.python.ops.gen_factorization_ops import *
+from tensorflow.contrib.util import loader
 from tensorflow.python.framework import ops
-from tensorflow.python.framework.load_library import load_op_library
 from tensorflow.python.ops import embedding_ops
 from tensorflow.python.platform import resource_loader
 
-_factorization_ops = load_op_library(resource_loader.get_path_to_datafile(
-    "_factorization_ops.so"))
-assert _factorization_ops, "Could not load _factorization_ops.so"
+_factorization_ops = loader.load_op_library(
+    resource_loader.get_path_to_datafile("_factorization_ops.so"))
 
 
 class WALSModel(object):
@@ -739,8 +738,7 @@ class WALSModel(object):
           name="wals_compute_partial_lhs_rhs")
       total_lhs = tf.expand_dims(total_lhs, 0) + partial_lhs
       total_rhs = tf.expand_dims(total_rhs, -1)
-      new_left_values = tf.squeeze(tf.batch_matrix_solve(total_lhs, total_rhs),
-                                   [2])
+      new_left_values = tf.squeeze(tf.matrix_solve(total_lhs, total_rhs), [2])
 
     return (new_left_values,
             self.scatter_update(left,

@@ -75,23 +75,23 @@ class EvaluationTest(tf.test.TestCase):
   def testUpdateOpsAreEvaluated(self):
     accuracy, update_op = slim.metrics.streaming_accuracy(
         self._predictions, self._labels)
-    init_op = tf.group(tf.initialize_all_variables(),
-                       tf.initialize_local_variables())
+    initial_op = tf.group(tf.initialize_all_variables(),
+                          tf.initialize_local_variables())
 
     with self.test_session() as sess:
       slim.evaluation.evaluation(
-          sess, init_op=init_op, eval_op=update_op)
+          sess, initial_op=initial_op, eval_op=update_op)
       self.assertAlmostEqual(accuracy.eval(), self._expected_accuracy)
 
   def testFinalOpsIsEvaluated(self):
     _, update_op = slim.metrics.streaming_accuracy(
         self._predictions, self._labels)
-    init_op = tf.group(tf.initialize_all_variables(),
-                       tf.initialize_local_variables())
+    initial_op = tf.group(tf.initialize_all_variables(),
+                          tf.initialize_local_variables())
 
     with self.test_session() as sess:
       accuracy_value = slim.evaluation.evaluation(
-          sess, init_op=init_op, final_op=update_op)
+          sess, initial_op=initial_op, final_op=update_op)
       self.assertAlmostEqual(accuracy_value, self._expected_accuracy)
 
   def testFinalOpsOnEvaluationLoop(self):
@@ -163,14 +163,14 @@ class EvaluationTest(tf.test.TestCase):
 
     summary_writer = tf.train.SummaryWriter(output_dir)
 
-    init_op = tf.group(tf.initialize_all_variables(),
-                       tf.initialize_local_variables())
+    initial_op = tf.group(tf.initialize_all_variables(),
+                          tf.initialize_local_variables())
     eval_op = tf.group(*names_to_updates.values())
 
     with self.test_session() as sess:
       slim.evaluation.evaluation(
           sess,
-          init_op=init_op,
+          initial_op=initial_op,
           eval_op=eval_op,
           summary_op=tf.merge_all_summaries(),
           summary_writer=summary_writer,
@@ -194,14 +194,14 @@ class EvaluationTest(tf.test.TestCase):
 
     summary_writer = tf.train.SummaryWriter(output_dir)
 
-    init_op = tf.group(tf.initialize_all_variables(),
-                       tf.initialize_local_variables())
+    initial_op = tf.group(tf.initialize_all_variables(),
+                          tf.initialize_local_variables())
     eval_op = tf.group(*names_to_updates.values())
 
     with self.test_session() as sess:
       slim.evaluation.evaluation(
           sess,
-          init_op=init_op,
+          initial_op=initial_op,
           eval_op=eval_op,
           summary_op=tf.merge_all_summaries(),
           summary_writer=summary_writer)
@@ -213,13 +213,13 @@ class EvaluationTest(tf.test.TestCase):
   def testWithFeedDict(self):
     accuracy, update_op = slim.metrics.streaming_accuracy(
         self._predictions, self._labels)
-    init_op = tf.group(tf.initialize_all_variables(),
-                       tf.initialize_local_variables())
+    initial_op = tf.group(tf.initialize_all_variables(),
+                          tf.initialize_local_variables())
 
     with self.test_session() as sess:
       slim.evaluation.evaluation(
           sess,
-          init_op=init_op,
+          initial_op=initial_op,
           eval_op=update_op,
           eval_op_feed_dict={self._scale: np.ones([], dtype=np.float32)})
       self.assertAlmostEqual(accuracy.eval(), self._expected_accuracy)
@@ -231,12 +231,12 @@ class EvaluationTest(tf.test.TestCase):
     accuracy, update_op = slim.metrics.streaming_accuracy(
         self._predictions, self._labels)
 
-    init_op = tf.group(tf.initialize_all_variables(),
-                       tf.initialize_local_variables())
+    initial_op = tf.group(tf.initialize_all_variables(),
+                          tf.initialize_local_variables())
 
     with self.test_session() as sess:
       slim.evaluation.evaluation(
-          sess, init_op=init_op, eval_op=update_op)
+          sess, initial_op=initial_op, eval_op=update_op)
       self.assertAlmostEqual(accuracy.eval(), self._expected_accuracy)
 
   def testLatestCheckpointReturnsNoneAfterTimeout(self):
@@ -249,6 +249,41 @@ class EvaluationTest(tf.test.TestCase):
     self.assertGreater(end, start + 0.5)
     # The timeout kicked in.
     self.assertLess(end, start + 1.1)
+
+  def testMonitorCheckpointsLoopTimeout(self):
+    ret = list(slim.evaluation.checkpoints_iterator(
+        '/non-existent-dir', timeout=0))
+    self.assertEqual(ret, [])
+
+  def testEvaluationLoopTimeout(self):
+    _, update_op = slim.metrics.streaming_accuracy(
+        self._predictions, self._labels)
+    init_op = tf.group(tf.initialize_all_variables(),
+                       tf.initialize_local_variables())
+
+    # Create checkpoint and log directories.
+    chkpt_dir = os.path.join(self.get_temp_dir(), 'tmp_logs/')
+    gfile.MakeDirs(chkpt_dir)
+    logdir = os.path.join(self.get_temp_dir(), 'tmp_logs2/')
+    gfile.MakeDirs(logdir)
+
+    # Save initialized variables to checkpoint directory.
+    saver = tf.train.Saver()
+    with self.test_session() as sess:
+      init_op.run()
+      saver.save(sess, os.path.join(chkpt_dir, 'chkpt'))
+
+    # Run the evaluation loop with a timeout.
+    with self.test_session() as sess:
+      start = time.time()
+      slim.evaluation.evaluation_loop(
+          '', chkpt_dir, logdir, eval_op=update_op,
+          eval_interval_secs=2.0, timeout=6.0)
+      end = time.time()
+      # Check we've waited for the timeout.
+      self.assertGreater(end - start, 6.0)
+      # Then the timeout kicked in and stops the loop.
+      self.assertLess(end - start, 7.5)
 
 
 class SingleEvaluationTest(tf.test.TestCase):
@@ -280,7 +315,7 @@ class SingleEvaluationTest(tf.test.TestCase):
     # First, save out the current model to a checkpoint:
     init_op = tf.group(tf.initialize_all_variables(),
                        tf.initialize_local_variables())
-    saver = tf.train.Saver()
+    saver = tf.train.Saver(write_version=tf.train.SaverDef.V1)
     with self.test_session() as sess:
       sess.run(init_op)
       saver.save(sess, checkpoint_path)

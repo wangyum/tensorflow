@@ -61,7 +61,7 @@ dist.prob(x)  # Shape [2]
 ```
 - - -
 
-#### `tf.contrib.distributions.Dirichlet.__init__(alpha, validate_args=True, allow_nan_stats=False, name='Dirichlet')` {#Dirichlet.__init__}
+#### `tf.contrib.distributions.Dirichlet.__init__(alpha, validate_args=False, allow_nan_stats=True, name='Dirichlet')` {#Dirichlet.__init__}
 
 Initialize a batch of Dirichlet distributions.
 
@@ -71,10 +71,10 @@ Initialize a batch of Dirichlet distributions.
 *  <b>`alpha`</b>: Positive floating point tensor with shape broadcastable to
     `[N1,..., Nm, k]` `m >= 0`.  Defines this as a batch of `N1 x ... x Nm`
      different `k` class Dirichlet distributions.
-*  <b>`validate_args`</b>: Whether to assert valid values for parameters `alpha` and
-    `x` in `prob` and `log_prob`.  If `False`, correct behavior is not
-    guaranteed.
-*  <b>`allow_nan_stats`</b>: Boolean, default `False`.  If `False`, raise an
+*  <b>`validate_args`</b>: `Boolean`, default `False`.  Whether to assert valid values
+    for parameters `alpha` and `x` in `prob` and `log_prob`.  If `False`,
+    correct behavior is not guaranteed.
+*  <b>`allow_nan_stats`</b>: `Boolean`, default `True`.  If `False`, raise an
     exception if a statistic (e.g. mean/mode/etc...) is undefined for any
     batch member.  If `True`, batch members with valid parameters leading to
     undefined statistics will return NaN for this statistic.
@@ -150,15 +150,22 @@ independent distributions of this kind the instance represents.
 
 - - -
 
-#### `tf.contrib.distributions.Dirichlet.cdf(value, name='cdf')` {#Dirichlet.cdf}
+#### `tf.contrib.distributions.Dirichlet.cdf(value, name='cdf', **condition_kwargs)` {#Dirichlet.cdf}
 
 Cumulative distribution function.
+
+Given random variable `X`, the cumulative distribution function `cdf` is:
+
+```
+cdf(x) := P[X <= x]
+```
 
 ##### Args:
 
 
 *  <b>`value`</b>: `float` or `double` `Tensor`.
 *  <b>`name`</b>: The name to give this op.
+*  <b>`**condition_kwargs`</b>: Named arguments forwarded to subclass implementation.
 
 ##### Returns:
 
@@ -178,7 +185,7 @@ The `DType` of `Tensor`s handled by this `Distribution`.
 
 #### `tf.contrib.distributions.Dirichlet.entropy(name='entropy')` {#Dirichlet.entropy}
 
-Shanon entropy in nats.
+Shannon entropy in nats.
 
 
 - - -
@@ -196,63 +203,6 @@ Shape of a single sample from a single batch as a 1-D int32 `Tensor`.
 
 
 *  <b>`event_shape`</b>: `Tensor`.
-
-
-- - -
-
-#### `tf.contrib.distributions.Dirichlet.from_params(cls, make_safe=True, **kwargs)` {#Dirichlet.from_params}
-
-Given (unconstrained) parameters, return an instantiated distribution.
-
-Subclasses should implement a static method `_safe_transforms` that returns
-a dict of parameter transforms, which will be used if `make_safe = True`.
-
-Example usage:
-
-```
-# Let's say we want a sample of size (batch_size, 10)
-shapes = MultiVariateNormalDiag.param_shapes([batch_size, 10])
-
-# shapes has a Tensor shape for mu and sigma
-# shapes == {
-#   "mu": tf.constant([batch_size, 10]),
-#   "sigma": tf.constant([batch_size, 10]),
-# }
-
-# Here we parameterize mu and sigma with the output of a linear
-# layer. Note that sigma is unconstrained.
-params = {}
-for name, shape in shapes.items():
-  params[name] = linear(x, shape[1])
-
-# Note that you can forward other kwargs to the `Distribution`, like
-# `allow_nan_stats` or `name`.
-mvn = MultiVariateNormalDiag.from_params(**params, allow_nan_stats=True)
-```
-
-Distribution parameters may have constraints (e.g. `sigma` must be positive
-for a `Normal` distribution) and the `from_params` method will apply default
-parameter transforms. If a user wants to use their own transform, they can
-apply it externally and set `make_safe=False`.
-
-##### Args:
-
-
-*  <b>`make_safe`</b>: Whether the `params` should be constrained. If True,
-    `from_params` will apply default parameter transforms. If False, no
-    parameter transforms will be applied.
-*  <b>`**kwargs`</b>: dict of parameters for the distribution.
-
-##### Returns:
-
-  A distribution parameterized by possibly transformed parameters in
-  `kwargs`.
-
-##### Raises:
-
-
-*  <b>`TypeError`</b>: if `make_safe` is `True` but `_safe_transforms` is not
-    implemented directly for `cls`.
 
 
 - - -
@@ -299,15 +249,26 @@ Same meaning as `event_shape`. May be only partially defined.
 
 - - -
 
-#### `tf.contrib.distributions.Dirichlet.log_cdf(value, name='log_cdf')` {#Dirichlet.log_cdf}
+#### `tf.contrib.distributions.Dirichlet.log_cdf(value, name='log_cdf', **condition_kwargs)` {#Dirichlet.log_cdf}
 
 Log cumulative distribution function.
+
+Given random variable `X`, the cumulative distribution function `cdf` is:
+
+```
+log_cdf(x) := Log[ P[X <= x] ]
+```
+
+Often, a numerical approximation can be used for `log_cdf(x)` that yields
+a more accurate answer than simply taking the logarithm of the `cdf` when
+`x << -1`.
 
 ##### Args:
 
 
 *  <b>`value`</b>: `float` or `double` `Tensor`.
 *  <b>`name`</b>: The name to give this op.
+*  <b>`**condition_kwargs`</b>: Named arguments forwarded to subclass implementation.
 
 ##### Returns:
 
@@ -318,7 +279,7 @@ Log cumulative distribution function.
 
 - - -
 
-#### `tf.contrib.distributions.Dirichlet.log_pdf(value, name='log_pdf')` {#Dirichlet.log_pdf}
+#### `tf.contrib.distributions.Dirichlet.log_pdf(value, name='log_pdf', **condition_kwargs)` {#Dirichlet.log_pdf}
 
 Log probability density function.
 
@@ -327,6 +288,7 @@ Log probability density function.
 
 *  <b>`value`</b>: `float` or `double` `Tensor`.
 *  <b>`name`</b>: The name to give this op.
+*  <b>`**condition_kwargs`</b>: Named arguments forwarded to subclass implementation.
 
 ##### Returns:
 
@@ -337,12 +299,12 @@ Log probability density function.
 ##### Raises:
 
 
-*  <b>`AttributeError`</b>: if not `is_continuous`.
+*  <b>`TypeError`</b>: if not `is_continuous`.
 
 
 - - -
 
-#### `tf.contrib.distributions.Dirichlet.log_pmf(value, name='log_pmf')` {#Dirichlet.log_pmf}
+#### `tf.contrib.distributions.Dirichlet.log_pmf(value, name='log_pmf', **condition_kwargs)` {#Dirichlet.log_pmf}
 
 Log probability mass function.
 
@@ -351,6 +313,7 @@ Log probability mass function.
 
 *  <b>`value`</b>: `float` or `double` `Tensor`.
 *  <b>`name`</b>: The name to give this op.
+*  <b>`**condition_kwargs`</b>: Named arguments forwarded to subclass implementation.
 
 ##### Returns:
 
@@ -361,26 +324,65 @@ Log probability mass function.
 ##### Raises:
 
 
-*  <b>`AttributeError`</b>: if `is_continuous`.
+*  <b>`TypeError`</b>: if `is_continuous`.
 
 
 - - -
 
-#### `tf.contrib.distributions.Dirichlet.log_prob(value, name='log_prob')` {#Dirichlet.log_prob}
+#### `tf.contrib.distributions.Dirichlet.log_prob(value, name='log_prob', **condition_kwargs)` {#Dirichlet.log_prob}
 
 Log probability density/mass function (depending on `is_continuous`).
+
+
+Additional documentation from `Dirichlet`:
+
+Note that the input must be a non-negative tensor with dtype `dtype` and whose
+shape can be broadcast with `self.alpha`.  For fixed leading dimensions, the
+last dimension represents counts for the corresponding Dirichlet distribution
+in `self.alpha`. `x` is only legal if it sums up to one.
 
 ##### Args:
 
 
 *  <b>`value`</b>: `float` or `double` `Tensor`.
 *  <b>`name`</b>: The name to give this op.
+*  <b>`**condition_kwargs`</b>: Named arguments forwarded to subclass implementation.
 
 ##### Returns:
 
 
 *  <b>`log_prob`</b>: a `Tensor` of shape `sample_shape(x) + self.batch_shape` with
     values of type `self.dtype`.
+
+
+- - -
+
+#### `tf.contrib.distributions.Dirichlet.log_survival_function(value, name='log_survival_function', **condition_kwargs)` {#Dirichlet.log_survival_function}
+
+Log survival function.
+
+Given random variable `X`, the survival function is defined:
+
+```
+log_survival_function(x) = Log[ P[X > x] ]
+                         = Log[ 1 - P[X <= x] ]
+                         = Log[ 1 - cdf(x) ]
+```
+
+Typically, different numerical approximations can be used for the log
+survival function, which are more accurate than `1 - cdf(x)` when `x >> 1`.
+
+##### Args:
+
+
+*  <b>`value`</b>: `float` or `double` `Tensor`.
+*  <b>`name`</b>: The name to give this op.
+*  <b>`**condition_kwargs`</b>: Named arguments forwarded to subclass implementation.
+
+##### Returns:
+
+  `Tensor` of shape `sample_shape(x) + self.batch_shape` with values of type
+    `self.dtype`.
 
 
 - - -
@@ -395,6 +397,13 @@ Mean.
 #### `tf.contrib.distributions.Dirichlet.mode(name='mode')` {#Dirichlet.mode}
 
 Mode.
+
+Additional documentation from `Dirichlet`:
+
+Note that the mode for the Dirichlet distribution is only defined
+when `alpha > 1`. This returns the mode when `alpha > 1`,
+and NaN otherwise. If `self.allow_nan_stats` is `False`, an exception
+will be raised rather than returning `NaN`.
 
 
 - - -
@@ -450,12 +459,12 @@ param_shapes with static (i.e. TensorShape) shapes.
 
 #### `tf.contrib.distributions.Dirichlet.parameters` {#Dirichlet.parameters}
 
-Dictionary of parameters used by this `Distribution`.
+Dictionary of parameters used to instantiate this `Distribution`.
 
 
 - - -
 
-#### `tf.contrib.distributions.Dirichlet.pdf(value, name='pdf')` {#Dirichlet.pdf}
+#### `tf.contrib.distributions.Dirichlet.pdf(value, name='pdf', **condition_kwargs)` {#Dirichlet.pdf}
 
 Probability density function.
 
@@ -464,6 +473,7 @@ Probability density function.
 
 *  <b>`value`</b>: `float` or `double` `Tensor`.
 *  <b>`name`</b>: The name to give this op.
+*  <b>`**condition_kwargs`</b>: Named arguments forwarded to subclass implementation.
 
 ##### Returns:
 
@@ -474,12 +484,12 @@ Probability density function.
 ##### Raises:
 
 
-*  <b>`AttributeError`</b>: if not `is_continuous`.
+*  <b>`TypeError`</b>: if not `is_continuous`.
 
 
 - - -
 
-#### `tf.contrib.distributions.Dirichlet.pmf(value, name='pmf')` {#Dirichlet.pmf}
+#### `tf.contrib.distributions.Dirichlet.pmf(value, name='pmf', **condition_kwargs)` {#Dirichlet.pmf}
 
 Probability mass function.
 
@@ -488,6 +498,7 @@ Probability mass function.
 
 *  <b>`value`</b>: `float` or `double` `Tensor`.
 *  <b>`name`</b>: The name to give this op.
+*  <b>`**condition_kwargs`</b>: Named arguments forwarded to subclass implementation.
 
 ##### Returns:
 
@@ -498,20 +509,29 @@ Probability mass function.
 ##### Raises:
 
 
-*  <b>`AttributeError`</b>: if `is_continuous`.
+*  <b>`TypeError`</b>: if `is_continuous`.
 
 
 - - -
 
-#### `tf.contrib.distributions.Dirichlet.prob(value, name='prob')` {#Dirichlet.prob}
+#### `tf.contrib.distributions.Dirichlet.prob(value, name='prob', **condition_kwargs)` {#Dirichlet.prob}
 
 Probability density/mass function (depending on `is_continuous`).
+
+
+Additional documentation from `Dirichlet`:
+
+Note that the input must be a non-negative tensor with dtype `dtype` and whose
+shape can be broadcast with `self.alpha`.  For fixed leading dimensions, the
+last dimension represents counts for the corresponding Dirichlet distribution
+in `self.alpha`. `x` is only legal if it sums up to one.
 
 ##### Args:
 
 
 *  <b>`value`</b>: `float` or `double` `Tensor`.
 *  <b>`name`</b>: The name to give this op.
+*  <b>`**condition_kwargs`</b>: Named arguments forwarded to subclass implementation.
 
 ##### Returns:
 
@@ -522,7 +542,7 @@ Probability density/mass function (depending on `is_continuous`).
 
 - - -
 
-#### `tf.contrib.distributions.Dirichlet.sample(sample_shape=(), seed=None, name='sample')` {#Dirichlet.sample}
+#### `tf.contrib.distributions.Dirichlet.sample(sample_shape=(), seed=None, name='sample', **condition_kwargs)` {#Dirichlet.sample}
 
 Generate samples of the specified shape.
 
@@ -535,6 +555,7 @@ sample.
 *  <b>`sample_shape`</b>: 0D or 1D `int32` `Tensor`. Shape of the generated samples.
 *  <b>`seed`</b>: Python integer seed for RNG
 *  <b>`name`</b>: name to give to the op.
+*  <b>`**condition_kwargs`</b>: Named arguments forwarded to subclass implementation.
 
 ##### Returns:
 
@@ -544,7 +565,7 @@ sample.
 
 - - -
 
-#### `tf.contrib.distributions.Dirichlet.sample_n(n, seed=None, name='sample_n')` {#Dirichlet.sample_n}
+#### `tf.contrib.distributions.Dirichlet.sample_n(n, seed=None, name='sample_n', **condition_kwargs)` {#Dirichlet.sample_n}
 
 Generate `n` samples.
 
@@ -555,6 +576,7 @@ Generate `n` samples.
     observations to sample.
 *  <b>`seed`</b>: Python integer seed for RNG
 *  <b>`name`</b>: name to give to the op.
+*  <b>`**condition_kwargs`</b>: Named arguments forwarded to subclass implementation.
 
 ##### Returns:
 
@@ -572,6 +594,33 @@ Generate `n` samples.
 #### `tf.contrib.distributions.Dirichlet.std(name='std')` {#Dirichlet.std}
 
 Standard deviation.
+
+
+- - -
+
+#### `tf.contrib.distributions.Dirichlet.survival_function(value, name='survival_function', **condition_kwargs)` {#Dirichlet.survival_function}
+
+Survival function.
+
+Given random variable `X`, the survival function is defined:
+
+```
+survival_function(x) = P[X > x]
+                     = 1 - P[X <= x]
+                     = 1 - cdf(x).
+```
+
+##### Args:
+
+
+*  <b>`value`</b>: `float` or `double` `Tensor`.
+*  <b>`name`</b>: The name to give this op.
+*  <b>`**condition_kwargs`</b>: Named arguments forwarded to subclass implementation.
+
+##### Returns:
+
+  Tensor` of shape `sample_shape(x) + self.batch_shape` with values of type
+    `self.dtype`.
 
 
 - - -

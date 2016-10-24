@@ -178,8 +178,19 @@ Status UnknownShape(shape_inference::InferenceContext* c);
 // Shape function for reduction operations.
 Status ReductionShape(shape_inference::InferenceContext* c);
 
+// Shape function for reduction operations where an empty reduction indices
+// vector means to reduce all.
+Status ReductionShapeForReduceJoin(shape_inference::InferenceContext* c);
+
 // Shape function for concat operations.
 Status ConcatShape(shape_inference::InferenceContext* c);
+
+// Shape function for concat operations.
+Status ConcatV2Shape(shape_inference::InferenceContext* c);
+
+// Shape function for binary operators that broadcast their inputs.
+// Tested by ops/math_ops_test.cc.
+Status BroadcastBinaryOpShapeFn(InferenceContext* c);
 
 }  // namespace shape_inference
 

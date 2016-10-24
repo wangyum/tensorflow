@@ -26,12 +26,13 @@ import numpy as np
 from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 
+from tensorflow.python.client import device_lib
 from tensorflow.python.framework import function
 from tensorflow.python.framework import tensor_shape
 from tensorflow.python.ops import control_flow_ops
 from tensorflow.python.ops import gen_array_ops
 from tensorflow.python.ops import gen_data_flow_ops
-from tensorflow.python.ops import logging_ops
+from tensorflow.python.ops import gen_logging_ops
 from tensorflow.python.ops import state_ops
 from tensorflow.python.util import nest
 
@@ -274,6 +275,20 @@ class ControlFlowTest(tf.test.TestCase):
     self.assertAllEqual(11, val)
     self.assertAllEqual(0, ind)
 
+  def testCondSparseTensor(self):
+    with self.test_session():
+      values = tf.constant([2.0, 4.0], name="values")
+      indices = tf.constant([[0], [3]], dtype=tf.int64, name="indices")
+      shape = tf.constant([10], dtype=tf.int64, name="dense_shape")
+      x = tf.SparseTensor(indices, values, shape=shape)
+      pred = tf.less(1, 2)
+      fn1 = lambda: tf.SparseTensor(indices + 1, x.values + 1, shape=shape)
+      fn2 = lambda: tf.SparseTensor(indices, x.values - 1, shape=shape)
+      r = tf.cond(pred, fn1, fn2)
+      self.assertAllEqual([3.0, 5.0], r.values.eval())
+      self.assertAllEqual([[1], [4]], r.indices.eval())
+      self.assertAllEqual(r.values.get_shape(), (2,))
+
   def testCondIndexedSlicesDifferentTypes(self):
     with self.test_session():
       values = tf.constant(10)
@@ -492,7 +507,7 @@ class ControlFlowTest(tf.test.TestCase):
                  ]
       self.assertAllEqual(dense_gv, [0.0, 2.0])
 
-  # Microbenchmark: 10,000 iterations took 0.21s.
+  # Microbenchmark: 250,000 iterations/s.
   def testWhile_1(self):
     with self.test_session():
       n = tf.constant(0)
@@ -719,7 +734,6 @@ class ControlFlowTest(tf.test.TestCase):
         _, r = tf.while_loop(c, b, [i, x],
                              [i.get_shape(),
                               tensor_shape.TensorShape([None, 5])])
-
 
   def _testNestedWhile_1(self, use_gpu):
     with self.test_session(use_gpu=use_gpu):
@@ -1694,6 +1708,27 @@ class ControlFlowTest(tf.test.TestCase):
       r = tf.gradients(rx, x)[0]
       self.assertAllClose(156.0, r.eval())
 
+  def testWhileGrad_StopGradInsideNoShape(self):
+    with self.test_session() as sess:
+      x = tf.placeholder(tf.float32)
+      y = tf.placeholder(tf.float32)
+
+      c = lambda x, y: tf.less(tf.reduce_sum(x), 100.0)
+      def b(x, y):
+        y1 = tf.stop_gradient(tf.square(y, name="stopped"))
+        x1 = tf.add(tf.square(x), y1)
+        return x1, y1
+      rx, _ = tf.while_loop(c, b, [x, y])
+
+      r = tf.gradients(rx, y)[0]
+      feed_dict = {x: [3.0, 4.0], y: [2.0, 3.0]}
+      self.assertAllClose([0.0, 0.0], sess.run(r, feed_dict=feed_dict))
+      r = tf.gradients(rx, x)[0]
+      self.assertAllClose([156.0, 400.0], sess.run(r, feed_dict=feed_dict))
+      name = "gradients/while/stopped_grad"
+      all_ops = x.graph.get_operations()
+      self.assertFalse(any([name in op.name for op in all_ops]))
+
   def testWhileGradGradFail(self):
     theta = tf.Variable(initial_value=1.)
     def fn(prev, x):
@@ -1702,6 +1737,8 @@ class ControlFlowTest(tf.test.TestCase):
     grad_theta = tf.gradients(result, theta)
     with self.assertRaisesRegexp(TypeError, "Second-order gradient"):
       tf.gradients(grad_theta, theta)
+    grad_theta_stopped = tf.stop_gradient(grad_theta)
+    tf.gradients(grad_theta_stopped, theta)
 
   def testOneValueCond(self):
     with self.test_session():
@@ -2060,6 +2097,38 @@ class ControlFlowTest(tf.test.TestCase):
       with self.assertRaises(ValueError):
         sess.run(tensor_list[0])
 
+  def testWhilePyFuncBasic(self):
+    def func(x):
+      return np.square(x)
+
+    with self.test_session():
+      r = tf.while_loop(
+          lambda i, v: i < 4,
+          lambda i, v: [i + 1, tf.py_func(func, [v], [tf.float32])[0]],
+          [tf.constant(0), tf.constant(2.0, tf.float32)],
+          [tensor_shape.unknown_shape(), tensor_shape.unknown_shape()])
+      self.assertEqual(r[1].eval(), 65536.0)
+
+  def testWhileFuncBasic(self):
+    @function.Defun(tf.float32)
+    def func(x):
+      return tf.square(tf.square(x))
+
+    with self.test_session():
+      x = tf.constant(2.0, tf.float32)
+      r = tf.while_loop(
+          lambda i, v: i < 2,
+          lambda i, v: [i + 1, func(v)],
+          [tf.constant(0), x],
+          [tensor_shape.unknown_shape(), tensor_shape.unknown_shape()])
+      self.assertEqual(r[1].eval(), 65536.0)
+
+      r = tf.gradients(r, x)[0]
+      self.assertEqual(r.eval(), 524288.0)
+      self.assertEqual(len([op for op in x.graph.get_operations()
+                            if op.type == "Stack"]),
+                       1)
+
 
 class TupleTest(tf.test.TestCase):
 
@@ -2144,37 +2213,38 @@ class TupleTest(tf.test.TestCase):
 
       self.assertEquals(1, var.eval())
 
-  def testWhilePyFuncBasic(self):
-    def func(x):
-      return np.square(x)
 
-    with self.test_session():
-      r = tf.while_loop(
-          lambda i, v: i < 4,
-          lambda i, v: [i + 1, tf.py_func(func, [v], [tf.float32])[0]],
-          [tf.constant(0), tf.constant(2.0, tf.float32)],
-          [tensor_shape.unknown_shape(), tensor_shape.unknown_shape()])
-      self.assertEqual(r[1].eval(), 65536.0)
+class AssertTest(tf.test.TestCase):
 
-  def testWhileFuncBasic(self):
-    @function.Defun(tf.float32)
-    def func(x):
-      return tf.square(tf.square(x))
-
-    with self.test_session():
-      x = tf.constant(2.0, tf.float32)
-      r = tf.while_loop(
-          lambda i, v: i < 2,
-          lambda i, v: [i + 1, func(v)],
-          [tf.constant(0), x],
-          [tensor_shape.unknown_shape(), tensor_shape.unknown_shape()])
-      self.assertEqual(r[1].eval(), 65536.0)
-
-      r = tf.gradients(r, x)[0]
-      self.assertEqual(r.eval(), 524288.0)
-      self.assertEqual(len([op for op in x.graph.get_operations()
-                            if op.type == "Stack"]),
-                       1)
+  def testGuardedAssertDoesNotCopyWhenTrue(self):
+    with self.test_session(use_gpu=True) as sess:
+      with tf.device("/gpu:0"):
+        value = tf.constant(1.0)
+      with tf.device("/cpu:0"):
+        true = tf.constant(True)
+        guarded_assert = tf.Assert(true, [value], name="guarded")
+        unguarded_assert = gen_logging_ops._assert(
+            true, [value], name="unguarded")
+      opts = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
+      guarded_metadata = tf.RunMetadata()
+      sess.run(guarded_assert, options=opts, run_metadata=guarded_metadata)
+      unguarded_metadata = tf.RunMetadata()
+      sess.run(unguarded_assert, options=opts, run_metadata=unguarded_metadata)
+      guarded_nodestat_names = [
+          n.node_name for d in guarded_metadata.step_stats.dev_stats
+          for n in d.node_stats]
+      unguarded_nodestat_names = [
+          n.node_name for d in unguarded_metadata.step_stats.dev_stats
+          for n in d.node_stats]
+      guarded_memcpy_nodestat_names = [
+          n for n in guarded_nodestat_names if "MEMCPYDtoH" in n]
+      unguarded_memcpy_nodestat_names = [
+          n for n in unguarded_nodestat_names if "MEMCPYDtoH" in n]
+      if "GPU" in [d.device_type for d in device_lib.list_local_devices()]:
+        # A copy was performed for the unguarded assert
+        self.assertLess(0, len(unguarded_memcpy_nodestat_names))
+      # No copy was performed for the guarded assert
+      self.assertEqual([], guarded_memcpy_nodestat_names)
 
 if __name__ == "__main__":
   tf.test.main()

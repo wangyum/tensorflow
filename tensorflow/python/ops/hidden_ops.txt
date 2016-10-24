@@ -1,7 +1,9 @@
 # array_ops
+BatchToSpace
 BroadcastGradientArgs
 ConcatOffset
 Concat
+ConcatV2
 Const
 EditDistance
 MirrorPad
@@ -11,7 +13,9 @@ Pack
 Pad
 Placeholder
 RefIdentity
+SpaceToBatch
 Split
+Squeeze
 Slice
 TileGrad  # Exported through array_grad instead of array_ops.
 ZerosLike  # TODO(josh11b): Use this instead of the Python version.
@@ -55,6 +59,7 @@ LookupTableFind
 LookupTableImport
 LookupTableInsert
 LookupTableSize
+MutableDenseHashTable
 MutableHashTable
 MutableHashTableOfTensors
 Mutex
@@ -76,9 +81,11 @@ StackClose
 TensorArray
 TensorArrayClose
 TensorArrayConcat
+TensorArrayGather
 TensorArrayGrad
 TensorArrayRead
 TensorArrayPack
+TensorArrayScatter
 TensorArraySize
 TensorArraySplit
 TensorArrayUnpack
@@ -121,11 +128,25 @@ TFRecordReader
 WholeFileReader
 
 # linalg_ops
-# (None)
+BatchCholesky
+BatchCholeskyGrad
+BatchMatrixDeterminant
+BatchMatrixInverse
+BatchMatrixSolve
+BatchMatrixSolveLs
+BatchMatrixTriangularSolve
+BatchSelfAdjointEig
+BatchSelfAdjointEigV2
+BatchSvd
+MatrixSolveLs
+SelfAdjointEig
+SelfAdjointEigV2
+Svd
 
 # logging_ops
 Assert
 AudioSummary
+AudioSummaryV2
 HistogramAccumulatorSummary
 HistogramSummary
 ImageSummary
@@ -140,7 +161,14 @@ AddN
 All
 Any
 BatchMatMul
+BatchFFT
+BatchFFT2D
+BatchFFT3D
+BatchIFFT
+BatchIFFT2D
+BatchIFFT3D
 Complex
+Conj
 Max
 Mean
 Min
@@ -207,6 +235,9 @@ TemporaryVariable
 DestroyTemporaryVariable
 
 # sparse_ops
+AddSparseToTensorsMap
+AddManySparseToTensorsMap
+TakeManySparseFromTensorsMap
 DeserializeManySparse
 SerializeManySparse
 SerializeSparse

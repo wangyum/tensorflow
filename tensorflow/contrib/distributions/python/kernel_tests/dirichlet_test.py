@@ -51,7 +51,7 @@ class DirichletTest(tf.test.TestCase):
   def testPdfXProper(self):
     alpha = [[1., 2, 3]]
     with self.test_session():
-      dist = tf.contrib.distributions.Dirichlet(alpha)
+      dist = tf.contrib.distributions.Dirichlet(alpha, validate_args=True)
       dist.pdf([.1, .3, .6]).eval()
       dist.pdf([.2, .3, .5]).eval()
       # Either condition can trigger.
@@ -150,14 +150,15 @@ class DirichletTest(tf.test.TestCase):
       self.assertEqual(dirichlet.mode().get_shape(), (3,))
       self.assertAllClose(dirichlet.mode().eval(), expected_mode)
 
-  def testDirichletMode_invalid(self):
+  def testDirichletModeInvalid(self):
     with self.test_session():
       alpha = np.array([1., 2, 3])
-      dirichlet = tf.contrib.distributions.Dirichlet(alpha=alpha)
+      dirichlet = tf.contrib.distributions.Dirichlet(
+          alpha=alpha, allow_nan_stats=False)
       with self.assertRaisesOpError("Condition x < y.*"):
         dirichlet.mode().eval()
 
-  def testDirichletMode_enable_allow_nan_stats(self):
+  def testDirichletModeEnableAllowNanStats(self):
     with self.test_session():
       alpha = np.array([1., 2, 3])
       dirichlet = tf.contrib.distributions.Dirichlet(

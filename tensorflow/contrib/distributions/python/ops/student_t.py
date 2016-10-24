@@ -26,12 +26,14 @@ from tensorflow.contrib.distributions.python.ops import distribution_util
 from tensorflow.contrib.framework.python.framework import tensor_util as contrib_tensor_util
 from tensorflow.python.framework import common_shapes
 from tensorflow.python.framework import constant_op
+from tensorflow.python.framework import dtypes
 from tensorflow.python.framework import ops
 from tensorflow.python.framework import tensor_shape
 from tensorflow.python.ops import array_ops
 from tensorflow.python.ops import check_ops
 from tensorflow.python.ops import control_flow_ops
 from tensorflow.python.ops import math_ops
+from tensorflow.python.ops import nn
 from tensorflow.python.ops import random_ops
 from tensorflow.python.ops import special_math_ops
 
@@ -89,8 +91,8 @@ class StudentT(distribution.Distribution):
                df,
                mu,
                sigma,
-               validate_args=True,
-               allow_nan_stats=False,
+               validate_args=False,
+               allow_nan_stats=True,
                name="StudentT"):
     """Construct Student's t distributions.
 
@@ -106,10 +108,10 @@ class StudentT(distribution.Distribution):
       sigma: Floating point tensor, the scaling factor for the
         distribution(s). `sigma` must contain only positive values.
         Note that `sigma` is not the standard deviation of this distribution.
-      validate_args: Whether to assert that `df > 0, sigma > 0`. If
-        `validate_args` is `False` and inputs are invalid, correct behavior is
-        not guaranteed.
-      allow_nan_stats:  Boolean, default `False`.  If `False`, raise an
+      validate_args: `Boolean`, default `False`.  Whether to assert that
+        `df > 0` and `sigma > 0`. If `validate_args` is `False` and inputs are
+        invalid, correct behavior is not guaranteed.
+      allow_nan_stats: `Boolean`, default `True`.  If `False`, raise an
         exception if a statistic (e.g. mean/mode/etc...) is undefined for any
         batch member.  If `True`, batch members with valid parameters leading to
         undefined statistics will return NaN for this statistic.
@@ -118,6 +120,8 @@ class StudentT(distribution.Distribution):
     Raises:
       TypeError: if mu and sigma are different dtypes.
     """
+    parameters = locals()
+    parameters.pop("self")
     with ops.name_scope(name, values=[df, mu, sigma]) as ns:
       with ops.control_dependencies([
           check_ops.assert_positive(df),
@@ -128,13 +132,21 @@ class StudentT(distribution.Distribution):
         self._sigma = array_ops.identity(sigma, name="sigma")
         contrib_tensor_util.assert_same_float_dtype(
             (self._df, self._mu, self._sigma))
-        super(StudentT, self).__init__(
-            dtype=self._sigma.dtype,
-            parameters={"df": self._df, "mu": self._mu, "sigma": self._sigma},
-            is_reparameterized=True,
-            validate_args=validate_args,
-            allow_nan_stats=allow_nan_stats,
-            name=ns)
+    super(StudentT, self).__init__(
+        dtype=self._sigma.dtype,
+        is_continuous=True,
+        is_reparameterized=True,
+        validate_args=validate_args,
+        allow_nan_stats=allow_nan_stats,
+        parameters=parameters,
+        graph_parents=[self._df, self._mu, self._sigma],
+        name=ns)
+
+  @staticmethod
+  def _param_shapes(sample_shape):
+    return dict(
+        zip(("df", "mu", "sigma"), ([ops.convert_to_tensor(
+            sample_shape, dtype=dtypes.int32)] * 3)))
 
   @property
   def df(self):
@@ -168,22 +180,17 @@ class StudentT(distribution.Distribution):
     return tensor_shape.scalar()
 
   def _sample_n(self, n, seed=None):
-    # We use 2 uniform random floats to generate polar random variates.
-    # http://dl.acm.org/citation.cfm?id=179631
-    # Theorem 2. Let G, H be iid variates, uniformly distributed on [0,1].
-    # Let theta = 2*pi*H, let R = sqrt(df*(G^(-2/df) - 1)) for df > 0.
-    # Let X = R*cos(theta), and let Y = R*sin(theta).
-    # Then X ~ t_df and Y ~ t_df.
-    # The variates X and Y are not independent.
-    shape = array_ops.concat(0, ([2, n], self.batch_shape()))
-    uniform = random_ops.random_uniform(shape=shape,
-                                        dtype=self.dtype,
-                                        seed=seed)
-    samples_g, samples_h = array_ops.unpack(uniform, num=2)
-    theta = (2. * math.pi) * samples_h
-    r = math_ops.sqrt(self.df *
-                      (math_ops.pow(samples_g, -2 / self.df) - 1))
-    samples = r * math_ops.cos(theta)
+    # The sampling method comes from the well known fact that if X ~ Normal(0,
+    # 1), and Z ~ Chi2(df), then X / sqrt(Z / df) ~ StudentT(df).
+    shape = array_ops.concat(0, ([n], self.batch_shape()))
+    normal_sample = random_ops.random_normal(
+        shape, dtype=self.dtype, seed=seed)
+    half = constant_op.constant(0.5, self.dtype)
+    df = self.df * array_ops.ones(self.batch_shape(), dtype=self.dtype)
+    gamma_sample = random_ops.random_gamma(
+        [n,], half * df, beta=half, dtype=self.dtype,
+        seed=distribution_util.gen_new_seed(seed, salt="student_t"))
+    samples = normal_sample / math_ops.sqrt(gamma_sample / df)
     return samples * self.sigma + self.mu
 
   def _log_prob(self, x):
@@ -215,6 +222,10 @@ class StudentT(distribution.Distribution):
             special_math_ops.lbeta(beta_arg) +
             math_ops.log(self.sigma))
 
+  @distribution_util.AppendDocstring(
+      """The mean of Student's T equals `mu` if `df > 1`, otherwise it is `NaN`.
+      If `self.allow_nan_stats=True`, then an exception will be raised rather
+      than returning `NaN`.""")
   def _mean(self):
     mean = self.mu * self._ones()
     if self.allow_nan_stats:
@@ -229,6 +240,16 @@ class StudentT(distribution.Distribution):
               message="mean not defined for components of df <= 1"),
       ], mean)
 
+  @distribution_util.AppendDocstring(
+      """
+      The variance for Student's T equals
+
+      ```
+      df / (df - 2), when df > 2
+      infinity, when 1 < df <= 2
+      NaN, when df <= 1
+      ```
+      """)
   def _variance(self):
     var = (self._ones() *
            math_ops.square(self.sigma) * self.df / (self.df - 2))
@@ -262,21 +283,24 @@ class StudentT(distribution.Distribution):
     return array_ops.ones(self.batch_shape(), dtype=self.dtype)
 
 
-distribution_util.append_class_fun_doc(StudentT.mean, doc_str="""
+class StudentTWithAbsDfSoftplusSigma(StudentT):
+  """StudentT with `df = floor(abs(df))` and `sigma = softplus(sigma)`."""
 
-    The mean of Student's T equals `mu` if `df > 1`, otherwise it is `NaN`.  If
-    `self.allow_nan_stats=False`, then an exception will be raised rather than
-    returning `NaN`.
-""")
-
-distribution_util.append_class_fun_doc(StudentT.variance, doc_str="""
-
-    Variance for Student's T equals
-
-    ```
-    df / (df - 2), when df > 2
-    infinity, when 1 < df <= 2
-    NaN, when df <= 1
-    ```
-
-""")
+  def __init__(self,
+               df,
+               mu,
+               sigma,
+               validate_args=False,
+               allow_nan_stats=True,
+               name="StudentTWithAbsDfSoftplusSigma"):
+    parameters = locals()
+    parameters.pop("self")
+    with ops.name_scope(name, values=[df, sigma]) as ns:
+      super(StudentTWithAbsDfSoftplusSigma, self).__init__(
+          df=math_ops.floor(math_ops.abs(df)),
+          mu=mu,
+          sigma=nn.softplus(sigma),
+          validate_args=validate_args,
+          allow_nan_stats=allow_nan_stats,
+          name=ns)
+    self._parameters = parameters

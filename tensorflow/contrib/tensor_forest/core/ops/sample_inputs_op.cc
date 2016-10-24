@@ -155,8 +155,9 @@ class SampleInputs : public OpKernel {
       int32 vi = low + rng_->Uniform(high - low);
       int64 i = internal::SubtleMustCopy(sparse_indices(vi, 0));
       if (i == input_index) {
-        *index =
-            static_cast<int32>(internal::SubtleMustCopy(sparse_indices(vi, 1)));
+        int64 ind = internal::SubtleMustCopy(sparse_indices(vi, 1));
+        CHECK(ind < kint32max);
+        *index = static_cast<int32>(ind);
         *val = sparse_values(vi);
         return true;
       }
@@ -222,7 +223,7 @@ class SampleInputs : public OpKernel {
                       "sparse_input_indices and sparse_input_values should "
                       "agree on the number of non-zero values"));
       if (have_weights) {
-        OP_REQUIRES(context, sparse_input_values.shape().dim_size(0) ==
+        OP_REQUIRES(context, sparse_input_shape.unaligned_flat<int64>()(0) ==
                                  input_weights.shape().dim_size(0),
                     errors::InvalidArgument(
                         "sparse_input_values and input_weights should agree "
@@ -298,7 +299,7 @@ class SampleInputs : public OpKernel {
     const auto node_map = node_to_accumulator.unaligned_flat<int32>();
     const auto features = split_features.tensor<int32, 2>();
     const auto thresholds = split_thresholds.tensor<float, 2>();
-    const auto weights = input_weights.tensor<float, 1>();
+    const auto weights = input_weights.unaligned_flat<float>();
 
     const int32 num_data = static_cast<int32>(leaves.shape().dim_size(0));
     const int32 num_splits = static_cast<int32>(
@@ -401,6 +402,8 @@ class SampleInputs : public OpKernel {
           int32 index;
           float val;
           const bool success = get_random_feature(*it, &index, &val);
+          CHECK(index >= 0) << "sample inputs chose negative feature: "
+                            << index;
           increment_input(split_initializations_per_input_, &it,
                           &input_used_count);
           if (success) {
@@ -408,8 +411,8 @@ class SampleInputs : public OpKernel {
             new_split_feature_rows_flat(output_slot, split) = index;
             new_split_threshold_rows_flat(output_slot, split) = val;
           } else {
-            VLOG(1) << "get_random_feature failed, bailing on output for "
-                    << "accumulator " << accumulator;
+            LOG(ERROR) << "get_random_feature failed, bailing on output for "
+                       << "accumulator " << accumulator;
             break;
           }
         }

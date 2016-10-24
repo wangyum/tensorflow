@@ -70,7 +70,7 @@ class BinomialTest(tf.test.TestCase):
     p = [[0.1, 0.2, 0.7]]
     n = [[5.]]
     with self.test_session():
-      binom = tf.contrib.distributions.Binomial(n=n, p=p)
+      binom = tf.contrib.distributions.Binomial(n=n, p=p, validate_args=True)
       binom.pmf([2., 3, 2]).eval()
       binom.pmf([3., 1, 2]).eval()
       with self.assertRaisesOpError("Condition x >= 0.*"):
@@ -78,12 +78,12 @@ class BinomialTest(tf.test.TestCase):
       with self.assertRaisesOpError("Condition x <= y.*"):
         binom.pmf([7., 3, 0]).eval()
 
-  def testPmf_non_integer_counts(self):
+  def testPmfNonIntegerCounts(self):
     p = [[0.1, 0.2, 0.7]]
     n = [[5.]]
     with self.test_session():
       # No errors with integer n.
-      binom = tf.contrib.distributions.Binomial(n=n, p=p)
+      binom = tf.contrib.distributions.Binomial(n=n, p=p, validate_args=True)
       binom.pmf([2., 3, 2]).eval()
       binom.pmf([3., 1, 2]).eval()
       # Both equality and integer checking fail.

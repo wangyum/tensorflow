@@ -116,15 +116,13 @@ class WishartCholeskyTest(tf.test.TestCase):
       chol_w_chol = distributions.WishartCholesky(
           df, chol(scale), cholesky_input_output_matrices=True)
       self.assertAllClose(chol_x, chol_w_chol.sample_n(1, seed=42).eval())
-      eigen_values = tf.batch_matrix_diag_part(
-          chol_w_chol.sample_n(1000, seed=42))
+      eigen_values = tf.matrix_diag_part(chol_w_chol.sample_n(1000, seed=42))
       np.testing.assert_array_less(0., eigen_values.eval())
 
       full_w_chol = distributions.WishartFull(
           df, scale, cholesky_input_output_matrices=True)
       self.assertAllClose(chol_x, full_w_chol.sample_n(1, seed=42).eval())
-      eigen_values = tf.batch_matrix_diag_part(
-          full_w_chol.sample_n(1000, seed=42))
+      eigen_values = tf.matrix_diag_part(full_w_chol.sample_n(1000, seed=42))
       np.testing.assert_array_less(0., eigen_values.eval())
 
       # Check first and second moments.
@@ -150,6 +148,30 @@ class WishartCholeskyTest(tf.test.TestCase):
       self.assertAllClose(chol_w.variance().eval(),
                           variance_estimate,
                           rtol=0.05)
+
+  # Test that sampling with the same seed twice gives the same results.
+  def testSampleMultipleTimes(self):
+    with self.test_session():
+      df = 4.
+      n_val = 100
+
+      tf.set_random_seed(654321)
+      chol_w1 = distributions.WishartCholesky(
+          df=df,
+          scale=chol(make_pd(1., 3)),
+          cholesky_input_output_matrices=False,
+          name="wishart1")
+      samples1 = chol_w1.sample_n(n_val, seed=123456).eval()
+
+      tf.set_random_seed(654321)
+      chol_w2 = distributions.WishartCholesky(
+          df=df,
+          scale=chol(make_pd(1., 3)),
+          cholesky_input_output_matrices=False,
+          name="wishart2")
+      samples2 = chol_w2.sample_n(n_val, seed=123456).eval()
+
+      self.assertAllClose(samples1, samples2)
 
   def testProb(self):
     with self.test_session():
@@ -296,7 +318,8 @@ class WishartCholeskyTest(tf.test.TestCase):
       with self.assertRaisesRegexp(tf.errors.InvalidArgumentError,
                                    "cannot be less than"):
         chol_w = distributions.WishartCholesky(df=df_deferred,
-                                               scale=chol_scale_deferred)
+                                               scale=chol_scale_deferred,
+                                               validate_args=True)
         sess.run(chol_w.log_prob(np.asarray(x, dtype=np.float32)),
                  feed_dict={df_deferred: 2., chol_scale_deferred: chol_scale})
 

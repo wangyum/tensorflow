@@ -180,5 +180,88 @@ class SmartCondDynamicTest(tf.test.TestCase):
         self.assertEqual(o.eval(feed_dict={p: v}), expected(v))
 
 
+class CollectNamedOutputsTest(tf.test.TestCase):
+
+  def test_collect(self):
+    t1 = tf.constant(1.0, name='t1')
+    t2 = tf.constant(2.0, name='t2')
+    utils.collect_named_outputs('end_points', 'a1', t1)
+    utils.collect_named_outputs('end_points', 'a2', t2)
+    self.assertEqual(tf.get_collection('end_points'), [t1, t2])
+
+  def test_aliases(self):
+    t1 = tf.constant(1.0, name='t1')
+    t2 = tf.constant(2.0, name='t2')
+    utils.collect_named_outputs('end_points', 'a1', t1)
+    utils.collect_named_outputs('end_points', 'a2', t2)
+    self.assertEqual(t1.alias, 'a1')
+    self.assertEqual(t2.alias, 'a2')
+
+  def test_gather_aliases(self):
+    t1 = tf.constant(1.0, name='t1')
+    t2 = tf.constant(2.0, name='t2')
+    t3 = tf.constant(2.0, name='t3')
+    utils.collect_named_outputs('end_points', 'a1', t1)
+    utils.collect_named_outputs('end_points', 'a2', t2)
+    tf.add_to_collection('end_points', t3)
+    aliases = utils.gather_tensors_alias(tf.get_collection('end_points'))
+    self.assertListEqual(aliases, ['a1', 'a2', 't3'])
+
+
+class NPositiveIntegersTest(tf.test.TestCase):
+
+  def test_invalid_input(self):
+    with self.assertRaises(ValueError):
+      utils.n_positive_integers('3', [1])
+
+    with self.assertRaises(ValueError):
+      utils.n_positive_integers(3.3, [1])
+
+    with self.assertRaises(ValueError):
+      utils.n_positive_integers(-1, [1])
+
+    with self.assertRaises(ValueError):
+      utils.n_positive_integers(0, [1])
+
+    with self.assertRaises(ValueError):
+      utils.n_positive_integers(1, [1, 2])
+
+    with self.assertRaises(ValueError):
+      utils.n_positive_integers(1, [-1])
+
+    with self.assertRaises(ValueError):
+      utils.n_positive_integers(1, [0])
+
+    with self.assertRaises(ValueError):
+      utils.n_positive_integers(1, [0])
+
+    with self.assertRaises(ValueError):
+      utils.n_positive_integers(2, [1])
+
+    with self.assertRaises(ValueError):
+      utils.n_positive_integers(2, [1, 2, 3])
+
+    with self.assertRaises(ValueError):
+      utils.n_positive_integers(2, ['hello', 2])
+
+    with self.assertRaises(ValueError):
+      utils.n_positive_integers(2, tf.TensorShape([2, 3, 1]))
+
+    with self.assertRaises(ValueError):
+      utils.n_positive_integers(3, tf.TensorShape([2, None, 1]))
+
+    with self.assertRaises(ValueError):
+      utils.n_positive_integers(3, tf.TensorShape(None))
+
+  def test_valid_input(self):
+    self.assertEqual(utils.n_positive_integers(1, 2), (2,))
+    self.assertEqual(utils.n_positive_integers(2, 2), (2, 2))
+    self.assertEqual(utils.n_positive_integers(2, (2, 3)), (2, 3))
+    self.assertEqual(utils.n_positive_integers(3, (2, 3, 1)), (2, 3, 1))
+    self.assertEqual(utils.n_positive_integers(3, (2, 3, 1)), (2, 3, 1))
+    self.assertEqual(
+        utils.n_positive_integers(3, tf.TensorShape([2, 3, 1])), (2, 3, 1))
+
+
 if __name__ == '__main__':
   tf.test.main()
