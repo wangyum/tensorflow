@@ -726,8 +726,9 @@ It should be run in a separate thread via e.g. a `QueueRunner`.
 To resample data with replacement on a per-example basis, use
 ['rejection_sample'](#rejection_sample) or
 ['resample_at_rate'](#resample_at_rate). For `rejection_sample`, provide
-a boolean Tensor describing whether to accept or reject. For `resample_at_rate`,
-providing the desired rate for each example. If you wish to specify relative
+a boolean Tensor describing whether to accept or reject. Resulting batch sizes
+are always the same. For `resample_at_rate`, provide the desired rate for each
+example. Resulting batch sizes may vary. If you wish to specify relative
 rates, rather than absolute ones, use ['weighted_resample'](#weighted_resample)
 (which also returns the actual resampling rate used for each output example).
 
@@ -899,7 +900,7 @@ batch.
 
 - - -
 
-### `tf.contrib.training.weighted_resample(inputs, weights, overall_rate, scope=None, mean_decay=0.999, warmup=10, seed=None)` {#weighted_resample}
+### `tf.contrib.training.weighted_resample(inputs, weights, overall_rate, scope=None, mean_decay=0.999, seed=None)` {#weighted_resample}
 
 Performs an approximate weighted resampling of `inputs`.
 
@@ -916,9 +917,6 @@ rate of selection across all inputs (and many invocations!) is
 *  <b>`overall_rate`</b>: Desired overall rate of resampling.
 *  <b>`scope`</b>: Scope to use for the op.
 *  <b>`mean_decay`</b>: How quickly to decay the running estimate of the mean weight.
-*  <b>`warmup`</b>: Until the resulting tensor has been evaluated `warmup`
-    times, the resampling menthod uses the true mean over all calls
-    as its weight estimate, rather than a decayed mean.
 *  <b>`seed`</b>: Random seed.
 
 ##### Returns:

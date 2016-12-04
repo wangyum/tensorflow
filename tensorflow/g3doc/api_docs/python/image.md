@@ -23,6 +23,30 @@ to be stripped from the image and re-attached using slicing ops.
 
 - - -
 
+### `tf.image.decode_gif(contents, name=None)` {#decode_gif}
+
+Decode the first frame of a GIF-encoded image to a uint8 tensor.
+
+GIF with frame or transparency compression are not supported
+convert animated GIF from compressed to uncompressed by:
+
+convert $src.gif -coalesce $dst.gif
+
+##### Args:
+
+
+*  <b>`contents`</b>: A `Tensor` of type `string`. 0-D.  The GIF-encoded image.
+*  <b>`name`</b>: A name for the operation (optional).
+
+##### Returns:
+
+  A `Tensor` of type `uint8`.
+  4-D with shape `[num_frames, height, width, 3]`. RGB order
+
+
+
+- - -
+
 ### `tf.image.decode_jpeg(contents, channels=None, ratio=None, fancy_upscaling=None, try_recover_truncated=None, acceptable_fraction=None, name=None)` {#decode_jpeg}
 
 Decode a JPEG-encoded image to a uint8 tensor.
@@ -356,7 +380,6 @@ Resize `images` to `size` using nearest neighbor interpolation.
 
   A `Tensor`. Has the same type as `images`. 4-D with shape
   `[batch, new_height, new_width, channels]`.
-
 
 
 
@@ -1210,7 +1233,7 @@ picked in the interval `[lower, upper]`.
 
 - - -
 
-### `tf.image.per_image_whitening(image)` {#per_image_whitening}
+### `tf.image.per_image_standardization(image)` {#per_image_standardization}
 
 Linearly scales `image` to have zero mean and unit norm.
 
@@ -1221,11 +1244,6 @@ of all values in image, and
 `stddev` is the standard deviation of all values in `image`. It is capped
 away from zero to protect against division by 0 when handling uniform images.
 
-Note that this implementation is limited:
-
-*  It only whitens based on the statistics of an individual image.
-*  It does not take into account the covariance structure.
-
 ##### Args:
 
 
@@ -1233,7 +1251,7 @@ Note that this implementation is limited:
 
 ##### Returns:
 
-  The whitened image with same shape as `image`.
+  The standardized image with same shape as `image`.
 
 ##### Raises:
 

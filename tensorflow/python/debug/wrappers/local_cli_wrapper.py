@@ -26,10 +26,10 @@ import tempfile
 # Google-internal import(s).
 from tensorflow.python.debug import debug_data
 from tensorflow.python.debug.cli import analyzer_cli
+from tensorflow.python.debug.cli import cli_shared
 from tensorflow.python.debug.cli import curses_ui
 from tensorflow.python.debug.cli import debugger_cli_common
 from tensorflow.python.debug.wrappers import framework
-from tensorflow.python.framework import ops
 
 
 _DUMP_ROOT_PREFIX = "tfdbg_"
@@ -170,58 +170,19 @@ class LocalCLIDebugWrapperSession(framework.BaseDebugWrapperSession):
         self._on_run_start_parsers["invoke_stepper"].format_help(),
         prefix_aliases=["s"])
 
-    if isinstance(request.fetches, list) or isinstance(request.fetches, tuple):
-      fetch_lines = [fetch.name for fetch in request.fetches]
-    else:
-      fetch_lines = [repr(request.fetches)]
-
-    if not request.feed_dict:
-      feed_dict_lines = ["(Empty)"]
-    else:
-      feed_dict_lines = []
-      for feed_key in request.feed_dict:
-        feed_dict_lines.append(feed_key.name)
-
-    # TODO(cais): Refactor into its own function.
-    help_intro = [
-        "======================================",
-        "About to enter Session run() call #%d:" % request.run_call_count, "",
-        "Fetch(es):"
-    ]
-    help_intro.extend(["  " + line for line in fetch_lines])
-    help_intro.extend(["", "Feed dict(s):"])
-    help_intro.extend(["  " + line for line in feed_dict_lines])
-    help_intro.extend([
-        "======================================", "",
-        "Select one of the following commands to proceed ---->", "  run:",
-        "      Execute the run() call with the debug tensor-watching",
-        "  run -n:",
-        "      Execute the run() call without the debug tensor-watching",
-        "  run -f <filter_name>:",
-        "      Keep executing run() calls until a dumped tensor passes ",
-        "      a given, registered filter emerge. Registered filter(s):"
-    ])
-
     if self._tensor_filters:
-      filter_names = []
-      for filter_name in self._tensor_filters:
-        filter_names.append(filter_name)
-        help_intro.append("        * " + filter_name)
-
       # Register tab completion for the filter names.
-      run_start_cli.register_tab_comp_context(["run", "r"], filter_names)
-    else:
-      help_intro.append("        (None)")
+      run_start_cli.register_tab_comp_context(["run", "r"],
+                                              list(self._tensor_filters.keys()))
 
-    help_intro.extend(["",
-                       "For more details, see help below:"
-                       "",])
-    run_start_cli.set_help_intro(help_intro)
+    run_start_cli.set_help_intro(
+        cli_shared.get_run_start_intro(request.run_call_count, request.fetches,
+                                       request.feed_dict, self._tensor_filters))
 
     # Create initial screen output detailing the run.
     title = "run-start: " + self._run_description
     response = run_start_cli.run_ui(
-        init_command="help", title=title, title_color="yellow")
+        init_command="help", title=title, title_color="blue_on_white")
     if response == debugger_cli_common.EXPLICIT_USER_EXIT:
       # Explicit user "exit" command leads to sys.exit(1).
       print(
@@ -246,24 +207,37 @@ class LocalCLIDebugWrapperSession(framework.BaseDebugWrapperSession):
     """
 
     if request.performed_action == framework.OnRunStartAction.DEBUG_RUN:
-      debug_dump = debug_data.DebugDumpDir(
-          self._dump_root,
-          partition_graphs=request.run_metadata.partition_graphs)
+      partition_graphs = None
+      if request.run_metadata and request.run_metadata.partition_graphs:
+        partition_graphs = request.run_metadata.partition_graphs
+      elif request.client_graph_def:
+        partition_graphs = [request.client_graph_def]
 
-      init_command = "lt"
-      title_color = "green"
-      if self._run_till_filter_pass:
-        if not debug_dump.find(
-            self._tensor_filters[self._run_till_filter_pass], first_n=1):
-          # No dumped tensor passes the filter in this run. Clean up the dump
-          # directory and move on.
-          shutil.rmtree(self._dump_root)
-          return framework.OnRunEndResponse()
-        else:
-          # Some dumped tensor(s) from this run passed the filter.
-          init_command = "lt -f %s" % self._run_till_filter_pass
-          title_color = "red"
-          self._run_till_filter_pass = None
+      debug_dump = debug_data.DebugDumpDir(
+          self._dump_root, partition_graphs=partition_graphs)
+
+      if request.tf_error:
+        help_intro = cli_shared.get_error_intro(request.tf_error)
+
+        init_command = "help"
+        title_color = "red_on_white"
+      else:
+        help_intro = None
+        init_command = "lt"
+
+        title_color = "black_on_white"
+        if self._run_till_filter_pass:
+          if not debug_dump.find(
+              self._tensor_filters[self._run_till_filter_pass], first_n=1):
+            # No dumped tensor passes the filter in this run. Clean up the dump
+            # directory and move on.
+            shutil.rmtree(self._dump_root)
+            return framework.OnRunEndResponse()
+          else:
+            # Some dumped tensor(s) from this run passed the filter.
+            init_command = "lt -f %s" % self._run_till_filter_pass
+            title_color = "red_on_white"
+            self._run_till_filter_pass = None
 
       analyzer = analyzer_cli.DebugAnalyzer(debug_dump)
 
@@ -327,6 +301,8 @@ class LocalCLIDebugWrapperSession(framework.BaseDebugWrapperSession):
       #    completion contexts and registered command handlers.
 
       title = "run-end: " + self._run_description
+      if help_intro:
+        run_end_cli.set_help_intro(help_intro)
       run_end_cli.run_ui(
           init_command=init_command, title=title, title_color=title_color)
 
@@ -418,18 +394,6 @@ class LocalCLIDebugWrapperSession(framework.BaseDebugWrapperSession):
     """
 
     self._run_call_count = run_call_count
-    self._run_description = "run #%d: " % self._run_call_count
-
-    if isinstance(fetches, ops.Tensor) or isinstance(fetches, ops.Operation):
-      self._run_description += "fetch: %s; " % fetches.name
-    else:
-      # Could be list, tuple, dict or namedtuple.
-      self._run_description += "%d fetch(es)" % len(fetches)
-
-    if not feed_dict:
-      self._run_description += "0 feeds"
-    else:
-      if len(feed_dict) == 1:
-        self._run_description += "1 feed"
-      else:
-        self._run_description += "%d feeds" % len(feed_dict)
+    self._run_description = cli_shared.get_run_short_description(run_call_count,
+                                                                 fetches,
+                                                                 feed_dict)

@@ -161,7 +161,8 @@ given variable.
 
 ##### Returns:
 
-  A list of (gradient, variable) pairs.
+  A list of (gradient, variable) pairs. Variable is always present, but
+  gradient can be `None`.
 
 ##### Raises:
 
@@ -743,6 +744,46 @@ to pretend that the value was a constant. Some examples include:
 
 
 
+- - -
+
+### `tf.hessians(ys, xs, name='hessians', colocate_gradients_with_ops=False, gate_gradients=False, aggregation_method=None)` {#hessians}
+
+Constructs the Hessian of sum of `ys` with respect to `x` in `xs`.
+
+`hessians()` adds ops to the graph to output the Hessian matrix of `ys`
+with respect to `xs`.  It returns a list of `Tensor` of length `len(xs)`
+where each tensor is the Hessian of `sum(ys)`. This function currently
+only supports evaluating the Hessian with respect to (a list of) one-
+dimensional tensors.
+
+The Hessian is a matrix of second-order partial derivatives of a scalar
+tensor (see https://en.wikipedia.org/wiki/Hessian_matrix for more details).
+
+##### Args:
+
+
+*  <b>`ys`</b>: A `Tensor` or list of tensors to be differentiated.
+*  <b>`xs`</b>: A `Tensor` or list of tensors to be used for differentiation.
+*  <b>`name`</b>: Optional name to use for grouping all the gradient ops together.
+    defaults to 'hessians'.
+*  <b>`colocate_gradients_with_ops`</b>: See `gradients()` documentation for details.
+*  <b>`gate_gradients`</b>: See `gradients()` documentation for details.
+*  <b>`aggregation_method`</b>: See `gradients()` documentation for details.
+
+##### Returns:
+
+  A list of Hessian matrices of `sum(y)` for each `x` in `xs`.
+
+##### Raises:
+
+
+*  <b>`LookupError`</b>: if one of the operations between `xs` and `ys` does not
+    have a registered gradient function.
+*  <b>`ValueError`</b>: if the arguments are invalid or not supported. Currently,
+    this function only supports one-dimensional `x` in `xs`.
+
+
+
 
 ## Gradient Clipping
 
@@ -980,9 +1021,252 @@ learning_step = (
     Must be positive.  See the decay computation above.
 *  <b>`decay_rate`</b>: A scalar `float32` or `float64` `Tensor` or a
     Python number.  The decay rate.
-*  <b>`staircase`</b>: Boolean.  It `True` decay the learning rate at discrete intervals
+*  <b>`staircase`</b>: Boolean.  If `True` decay the learning rate at discrete intervals
 *  <b>`name`</b>: String.  Optional name of the operation.  Defaults to
     'ExponentialDecay'.
+
+##### Returns:
+
+  A scalar `Tensor` of the same type as `learning_rate`.  The decayed
+  learning rate.
+
+##### Raises:
+
+
+*  <b>`ValueError`</b>: if `global_step` is not supplied.
+
+
+- - -
+
+### `tf.train.inverse_time_decay(learning_rate, global_step, decay_steps, decay_rate, staircase=False, name=None)` {#inverse_time_decay}
+
+Applies inverse time decay to the initial learning rate.
+
+When training a model, it is often recommended to lower the learning rate as
+the training progresses.  This function applies an inverse decay function
+to a provided initial learning rate.  It requires an `global_step` value to
+compute the decayed learning rate.  You can just pass a TensorFlow variable
+that you increment at each training step.
+
+The function returns the decayed learning rate.  It is computed as:
+
+```python
+decayed_learning_rate = learning_rate / (1 + decay_rate * t)
+```
+
+Example: decay 1/t with a rate of 0.5:
+
+```python
+...
+global_step = tf.Variable(0, trainable=False)
+learning_rate = 0.1
+k = 0.5
+learning_rate = tf.train.inverse_time_decay(learning_rate, global_step, k)
+
+# Passing global_step to minimize() will increment it at each step.
+learning_step = (
+    tf.train.GradientDescentOptimizer(learning_rate)
+    .minimize(...my loss..., global_step=global_step)
+)
+```
+
+##### Args:
+
+
+*  <b>`learning_rate`</b>: A scalar `float32` or `float64` `Tensor` or a
+    Python number.  The initial learning rate.
+*  <b>`global_step`</b>: A Python number.
+    Global step to use for the decay computation.  Must not be negative.
+*  <b>`decay_steps`</b>: How often to apply decay.
+*  <b>`decay_rate`</b>: A Python number.  The decay rate.
+*  <b>`staircase`</b>: Whether to apply decay in a discrete staircase, as opposed to
+    continuous, fashion.
+*  <b>`name`</b>: String.  Optional name of the operation.  Defaults to
+    'InverseTimeDecay'.
+
+##### Returns:
+
+  A scalar `Tensor` of the same type as `learning_rate`.  The decayed
+  learning rate.
+
+##### Raises:
+
+
+*  <b>`ValueError`</b>: if `global_step` is not supplied.
+
+
+- - -
+
+### `tf.train.natural_exp_decay(learning_rate, global_step, decay_steps, decay_rate, staircase=False, name=None)` {#natural_exp_decay}
+
+Applies natural exponential decay to the initial learning rate.
+
+When training a model, it is often recommended to lower the learning rate as
+the training progresses.  This function applies an exponential decay function
+to a provided initial learning rate.  It requires an `global_step` value to
+compute the decayed learning rate.  You can just pass a TensorFlow variable
+that you increment at each training step.
+
+The function returns the decayed learning rate.  It is computed as:
+
+```python
+decayed_learning_rate = learning_rate * exp(-decay_rate * global_step)
+```
+
+Example: decay exponentially with a base of 0.96:
+
+```python
+...
+global_step = tf.Variable(0, trainable=False)
+learning_rate = 0.1
+k = 0.5
+learning_rate = tf.train.exponential_time_decay(learning_rate, global_step, k)
+
+# Passing global_step to minimize() will increment it at each step.
+learning_step = (
+    tf.train.GradientDescentOptimizer(learning_rate)
+    .minimize(...my loss..., global_step=global_step)
+)
+```
+
+##### Args:
+
+
+*  <b>`learning_rate`</b>: A scalar `float32` or `float64` `Tensor` or a
+    Python number.  The initial learning rate.
+*  <b>`global_step`</b>: A Python number.
+    Global step to use for the decay computation.  Must not be negative.
+*  <b>`decay_steps`</b>: How often to apply decay.
+*  <b>`decay_rate`</b>: A Python number.  The decay rate.
+*  <b>`staircase`</b>: Whether to apply decay in a discrete staircase, as opposed to
+    continuous, fashion.
+*  <b>`name`</b>: String.  Optional name of the operation.  Defaults to
+    'ExponentialTimeDecay'.
+
+##### Returns:
+
+  A scalar `Tensor` of the same type as `learning_rate`.  The decayed
+  learning rate.
+
+##### Raises:
+
+
+*  <b>`ValueError`</b>: if `global_step` is not supplied.
+
+
+- - -
+
+### `tf.train.piecewise_constant(x, boundaries, values, name=None)` {#piecewise_constant}
+
+Piecewise constant from boundaries and interval values.
+
+Example: use a learning rate that's 1.0 for the first 100000 steps, 0.5
+  for steps 100001 to 110000, and 0.1 for any additional steps.
+
+```python
+global_step = tf.Variable(0, trainable=False)
+boundaries = [100000, 110000]
+values = [1.0, 0.5, 0.1]
+learning_rate = tf.train.piecewise_constant(global_step, boundaries, values)
+
+# Later, whenever we perform an optimization step, we increment global_step.
+```
+
+##### Args:
+
+
+*  <b>`x`</b>: A 0-D scalar `Tensor`. Must be one of the following types: `float32`,
+    `float64`, `uint8`, `int8`, `int16`, `int32`, `int64`.
+*  <b>`boundaries`</b>: A list of `Tensor`s or `int`s or `float`s with strictly
+    increasing entries, and with all elements having the same type as `x`.
+*  <b>`values`</b>: A list of `Tensor`s or float`s or `int`s that specifies the values
+    for the intervals defined by `boundaries`. It should have one more element
+    than `boundaries`, and all elements should have the same type.
+*  <b>`name`</b>: A string. Optional name of the operation. Defaults to
+    'PiecewiseConstant'.
+
+##### Returns:
+
+  A 0-D Tensor. Its value is `values[0]` when `x <= boundaries[0]`,
+  `values[1]` when `x > boundaries[0]` and `x <= boundaries[1]`, ...,
+  and values[-1] when `x > boundaries[-1]`.
+
+##### Raises:
+
+
+*  <b>`ValueError`</b>: if types of `x` and `buondaries` do not match, or types of all
+      `values` do not match.
+
+
+- - -
+
+### `tf.train.polynomial_decay(learning_rate, global_step, decay_steps, end_learning_rate=0.0001, power=1.0, cycle=False, name=None)` {#polynomial_decay}
+
+Applies a polynomial decay to the learning rate.
+
+It is commonly observed that a monotonically decreasing learning rate, whose
+degree of change is carefully chosen, results in a better performing model.
+This function applies a polynomial decay function to a provided initial
+`learning_rate` to reach an `end_learning_rate` in the given `decay_steps`.
+
+It requires a `global_step` value to compute the decayed learning rate.  You
+can just pass a TensorFlow variable that you increment at each training step.
+
+The function returns the decayed learning rate.  It is computed as:
+
+```python
+global_step = min(global_step, decay_steps)
+decayed_learning_rate = (learning_rate - end_learning_rate) *
+                        (1 - global_step / decay_steps) ^ (power) +
+                        end_learning_rate
+
+```
+
+If `cycle` is True then a multiple of `decay_steps` is used, the first one
+that is bigger than `global_steps`.
+
+```python
+decay_steps = decay_steps * ceil(global_step / decay_steps)
+decayed_learning_rate = (learning_rate - end_learning_rate) *
+                        (1 - global_step / decay_steps) ^ (power) +
+                        end_learning_rate
+
+```
+
+Example: decay from 0.1 to 0.01 in 10000 steps using sqrt (i.e. power=0.5):
+
+```python
+...
+global_step = tf.Variable(0, trainable=False)
+starter_learning_rate = 0.1
+end_learning_rate = 0.01
+decay_steps = 10000
+learning_rate = tf.train.polynomial_decay(starter_learning_rate, global_step,
+                                          decay_steps, end_learning_rate,
+                                          power=0.5)
+# Passing global_step to minimize() will increment it at each step.
+learning_step = (
+    tf.train.GradientDescentOptimizer(learning_rate)
+    .minimize(...my loss..., global_step=global_step)
+)
+```
+
+##### Args:
+
+
+*  <b>`learning_rate`</b>: A scalar `float32` or `float64` `Tensor` or a
+    Python number.  The initial learning rate.
+*  <b>`global_step`</b>: A scalar `int32` or `int64` `Tensor` or a Python number.
+    Global step to use for the decay computation.  Must not be negative.
+*  <b>`decay_steps`</b>: A scalar `int32` or `int64` `Tensor` or a Python number.
+    Must be positive.  See the decay computation above.
+*  <b>`end_learning_rate`</b>: A scalar `float32` or `float64` `Tensor` or a
+    Python number.  The minimal end learning rate.
+*  <b>`power`</b>: A scalar `float32` or `float64` `Tensor` or a
+    Python number.  The power of the polynomial. Defaults to sqrt, i.e. 0.5.
+*  <b>`cycle`</b>: A boolean, whether or not it should cycle beyond decay_steps.
+*  <b>`name`</b>: String.  Optional name of the operation. Defaults to
+    'PolynomialDecay'.
 
 ##### Returns:
 
@@ -1088,7 +1372,7 @@ saver.restore(...checkpoint filename...)
 
 - - -
 
-#### `tf.train.ExponentialMovingAverage.__init__(decay, num_updates=None, name='ExponentialMovingAverage')` {#ExponentialMovingAverage.__init__}
+#### `tf.train.ExponentialMovingAverage.__init__(decay, num_updates=None, zero_debias=False, name='ExponentialMovingAverage')` {#ExponentialMovingAverage.__init__}
 
 Creates a new ExponentialMovingAverage object.
 
@@ -1096,7 +1380,7 @@ The `apply()` method has to be called to create shadow variables and add
 ops to maintain moving averages.
 
 The optional `num_updates` parameter allows one to tweak the decay rate
-dynamically. .  It is typical to pass the count of training steps, usually
+dynamically. It is typical to pass the count of training steps, usually
 kept in a variable that is incremented at each step, in which case the
 decay rate is lower at the start of training.  This makes moving averages
 move faster.  If passed, the actual decay rate used is:
@@ -1108,6 +1392,8 @@ move faster.  If passed, the actual decay rate used is:
 
 *  <b>`decay`</b>: Float.  The decay to use.
 *  <b>`num_updates`</b>: Optional count of number of updates applied to variables.
+*  <b>`zero_debias`</b>: If `True`, zero debias moving-averages that are initialized
+    with tensors.
 *  <b>`name`</b>: String. Optional prefix name to use for the name of ops added in
     `apply()`.
 
@@ -1122,7 +1408,8 @@ Maintains moving averages of variables.
 creates shadow variables for all elements of `var_list`.  Shadow variables
 for `Variable` objects are initialized to the variable's initial value.
 They will be added to the `GraphKeys.MOVING_AVERAGE_VARIABLES` collection.
-For `Tensor` objects, the shadow variables are initialized to 0.
+For `Tensor` objects, the shadow variables are initialized to 0 and zero
+debiased (see docstring in `assign_moving_average` for more details).
 
 shadow variables are created with `trainable=False` and added to the
 `GraphKeys.ALL_VARIABLES` collection.  They will be returned by calls to
@@ -1194,7 +1481,7 @@ Returns the `Variable` holding the average of `var`.
 ##### Returns:
 
   A `Variable` object or `None` if the moving average of `var`
-  is not maintained..
+  is not maintained.
 
 
 - - -
@@ -1411,6 +1698,13 @@ that `RuntimeError`.
 
 - - -
 
+#### `tf.train.Coordinator.raise_requested_exception()` {#Coordinator.raise_requested_exception}
+
+If an exception has been passed to `request_stop`, this raises it.
+
+
+- - -
+
 #### `tf.train.Coordinator.register_thread(thread)` {#Coordinator.register_thread}
 
 Register a thread to join.
@@ -1582,19 +1876,19 @@ to all be the same op, but it is expected that they all enqueue tensors in
 
 #### `tf.train.QueueRunner.create_threads(sess, coord=None, daemon=False, start=False)` {#QueueRunner.create_threads}
 
-Create threads to run the enqueue ops.
+Create threads to run the enqueue ops for the given session.
 
 This method requires a session in which the graph was launched.  It creates
 a list of threads, optionally starting them.  There is one thread for each
 op passed in `enqueue_ops`.
 
-The `coord` argument is an optional coordinator, that the threads will use
+The `coord` argument is an optional coordinator that the threads will use
 to terminate together and report exceptions.  If a coordinator is given,
 this method starts an additional thread to close the queue when the
 coordinator requests a stop.
 
-This method may be called again as long as all threads from a previous call
-have stopped.
+If previously created threads for the given session are still running, no
+new threads will be created.
 
 ##### Args:
 
@@ -1609,12 +1903,6 @@ have stopped.
 ##### Returns:
 
   A list of threads.
-
-##### Raises:
-
-
-*  <b>`RuntimeError`</b>: If threads from a previous call to `create_threads()` are
-  still running.
 
 
 - - -
@@ -3157,7 +3445,7 @@ Returns a list of valid task indices in the given job.
 
 - - -
 
-### `tf.train.replica_device_setter(ps_tasks=0, ps_device='/job:ps', worker_device='/job:worker', merge_devices=True, cluster=None, ps_ops=None)` {#replica_device_setter}
+### `tf.train.replica_device_setter(ps_tasks=0, ps_device='/job:ps', worker_device='/job:worker', merge_devices=True, cluster=None, ps_ops=None, ps_strategy=None)` {#replica_device_setter}
 
 Return a `device function` to use when building a Graph for replicas.
 
@@ -3168,6 +3456,12 @@ outwards. The merging behavior adds constraints to fields that are yet unset
 by a more inner context. Currently the fields are (job, task, cpu/gpu).
 
 If `cluster` is `None`, and `ps_tasks` is 0, the returned function is a no-op.
+Otherwise, the value of `ps_tasks` is derived from `cluster`.
+
+By default, only Variable ops are placed on ps tasks, and the placement
+strategy is round-robin over all ps tasks. A custom `ps_strategy` may be used
+to do more intelligent placement, such as
+`tf.contrib.training.GreedyLoadBalancingStrategy`.
 
 For example,
 
@@ -3177,7 +3471,7 @@ For example,
 cluster_spec = {
     "ps": ["ps0:2222", "ps1:2222"],
     "worker": ["worker0:2222", "worker1:2222", "worker2:2222"]}
-with tf.device(tf.replica_device_setter(cluster=cluster_spec)):
+with tf.device(tf.train.replica_device_setter(cluster=cluster_spec)):
   # Build your graph
   v1 = tf.Variable(...)  # assigned to /job:ps/task:0
   v2 = tf.Variable(...)  # assigned to /job:ps/task:1
@@ -3188,7 +3482,8 @@ with tf.device(tf.replica_device_setter(cluster=cluster_spec)):
 ##### Args:
 
 
-*  <b>`ps_tasks`</b>: Number of tasks in the `ps` job.
+*  <b>`ps_tasks`</b>: Number of tasks in the `ps` job.  Ignored if `cluster` is
+    provided.
 *  <b>`ps_device`</b>: String.  Device of the `ps` job.  If empty no `ps` job is used.
     Defaults to `ps`.
 *  <b>`worker_device`</b>: String.  Device of the `worker` job.  If empty no `worker`
@@ -3197,7 +3492,12 @@ with tf.device(tf.replica_device_setter(cluster=cluster_spec)):
     device constraint is completely unset. merges device specification rather
     than overriding them.
 *  <b>`cluster`</b>: `ClusterDef` proto or `ClusterSpec`.
-*  <b>`ps_ops`</b>: List of `Operation` objects that need to be placed on `ps` devices.
+*  <b>`ps_ops`</b>: List of strings representing `Operation` types that need to be
+    placed on `ps` devices.  If `None`, defaults to `["Variable"]`.
+*  <b>`ps_strategy`</b>: A callable invoked for every ps `Operation` (i.e. matched by
+    `ps_ops`), that takes the `Operation` and returns the ps task index to
+    use.  If `None`, defaults to a round-robin strategy across all `ps`
+    devices.
 
 ##### Returns:
 
@@ -3205,7 +3505,8 @@ with tf.device(tf.replica_device_setter(cluster=cluster_spec)):
 
 ##### Raises:
 
-  TypeError if `cluster` is not a dictionary or `ClusterDef` protocol buffer.
+  TypeError if `cluster` is not a dictionary or `ClusterDef` protocol buffer,
+  or if `ps_strategy` is provided but not a callable.
 
 
 - - -
@@ -3342,7 +3643,7 @@ Get from cache or create a default operation.
 
 - - -
 
-### `tf.train.MonitoredTrainingSession(master='', is_chief=True, checkpoint_dir=None, hooks=None, scaffold=None, config=None)` {#MonitoredTrainingSession}
+### `tf.train.MonitoredTrainingSession(master='', is_chief=True, checkpoint_dir=None, scaffold=None, hooks=None, chief_only_hooks=None, save_checkpoint_secs=600, save_summaries_steps=100, config=None)` {#MonitoredTrainingSession}
 
 Creates a `MonitoredSession` for training.
 
@@ -3361,10 +3662,20 @@ inialize/restore.
     initialize or recover the TensorFlow session.
 *  <b>`checkpoint_dir`</b>: A string.  Optional path to a directory where to restore
     variables.
-*  <b>`hooks`</b>: Optional list of `SessionRunHook` objects.
 *  <b>`scaffold`</b>: A `Scaffold` used for gathering or building supportive ops. If
     not specified, a default one is created. It's used to finalize the graph.
-*  <b>`config`</b>: `ConfigProto` proto used to configure the session.
+*  <b>`hooks`</b>: Optional list of `SessionRunHook` objects.
+*  <b>`chief_only_hooks`</b>: list of `SessionRunHook` objects. Activate these hooks if
+    `is_chief==True`, ignore otherwise.
+*  <b>`save_checkpoint_secs`</b>: The frequency, in seconds, that a checkpoint is saved
+    using a default checkpoint saver. If `save_checkpoint_secs` is set to
+    `None`, then the default checkpoint saver isn't used.
+*  <b>`save_summaries_steps`</b>: The frequency, in number of global steps, that the
+    summaries are written to disk using a default summary saver. If
+    `save_summaries_steps` is set to `None`, then the default summary saver
+    isn't used.
+*  <b>`config`</b>: an instance of `tf.ConfigProto` proto used to configure the session.
+    It's the `config` argument of constructor of `tf.Session`.
 
 ##### Returns:
 
@@ -3739,7 +4050,7 @@ This is useful in summaries to measure and report sparsity.  For example,
 
 ```python
     z = tf.Relu(...)
-    summ = tf.scalar_summary('sparsity', tf.nn.zero_fraction(z))
+    summ = tf.contrib.deprecated.scalar_summary('sparsity', tf.nn.zero_fraction(z))
 ```
 
 ##### Args:
@@ -3813,12 +4124,66 @@ overview of summaries, event files, and visualization in TensorBoard.
 
 ### `class tf.train.SummaryWriter` {#SummaryWriter}
 
-Exact match for the pre-1.0 tf.train.SummaryWriter.
+
 - - -
 
-#### `tf.train.SummaryWriter.__init__(logdir, graph=None, max_queue=10, flush_secs=120, graph_def=None)` {#SummaryWriter.__init__}
+#### `tf.train.SummaryWriter.__init__(*args, **kwargs)` {#SummaryWriter.__init__}
+
+Creates a `SummaryWriter` and an event file. (deprecated)
+
+THIS FUNCTION IS DEPRECATED. It will be removed after 2016-11-30.
+Instructions for updating:
+Please switch to tf.summary.FileWriter. The interface and behavior is the same; this is just a rename.
+
+    This class is deprecated, and should be replaced with tf.summary.FileWriter.
+
+    On construction the summary writer creates a new event file in `logdir`.
+    This event file will contain `Event` protocol buffers constructed when you
+    call one of the following functions: `add_summary()`, `add_session_log()`,
+    `add_event()`, or `add_graph()`.
+
+    If you pass a `Graph` to the constructor it is added to
+    the event file. (This is equivalent to calling `add_graph()` later).
+
+    TensorBoard will pick the graph from the file and display it graphically so
+    you can interactively explore the graph you built. You will usually pass
+    the graph from the session in which you launched it:
+
+    ```python
+    ...create a graph...
+    # Launch the graph in a session.
+    sess = tf.Session()
+    # Create a summary writer, add the 'graph' to the event file.
+    writer = tf.train.SummaryWriter(<some-directory>, sess.graph)
+    ```
+
+    The other arguments to the constructor control the asynchronous writes to
+    the event file:
+
+    *  `flush_secs`: How often, in seconds, to flush the added summaries
+       and events to disk.
+    *  `max_queue`: Maximum number of summaries or events pending to be
+       written to disk before one of the 'add' calls block.
+
+    Args:
+      logdir: A string. Directory where event file will be written.
+      graph: A `Graph` object, such as `sess.graph`.
+      max_queue: Integer. Size of the queue for pending events and summaries.
+      flush_secs: Number. How often, in seconds, to flush the
+        pending events and summaries to disk.
+      graph_def: DEPRECATED: Use the `graph` argument instead.
 
 
+- - -
+
+#### `tf.train.SummaryWriter.add_event(event)` {#SummaryWriter.add_event}
+
+Adds an event to the event file.
+
+##### Args:
+
+
+*  <b>`event`</b>: An `Event` protocol buffer.
 
 
 - - -
@@ -3928,14 +4293,52 @@ commonly done to report evaluation results in event files.
     summary.
 
 
+- - -
+
+#### `tf.train.SummaryWriter.close()` {#SummaryWriter.close}
+
+Flushes the event file to disk and close the file.
+
+Call this method when you do not need the summary writer anymore.
+
+
+- - -
+
+#### `tf.train.SummaryWriter.flush()` {#SummaryWriter.flush}
+
+Flushes the event file to disk.
+
+Call this method to make sure that all pending events have been written to
+disk.
+
+
+- - -
+
+#### `tf.train.SummaryWriter.get_logdir()` {#SummaryWriter.get_logdir}
+
+Returns the directory where event file will be written.
+
+
+- - -
+
+#### `tf.train.SummaryWriter.reopen()` {#SummaryWriter.reopen}
+
+Reopens the EventFileWriter.
+
+Can be called after `close()` to add more events in the same directory.
+The events will go into a new events file.
+
+Does nothing if the EventFileWriter was not closed.
+
+
 
 - - -
 
 ### `class tf.train.SummaryWriterCache` {#SummaryWriterCache}
 
-Cache for summary writers.
+Cache for file writers.
 
-This class caches summary writers, one per directory.
+This class caches file writers, one per directory.
 - - -
 
 #### `tf.train.SummaryWriterCache.clear()` {#SummaryWriterCache.clear}
@@ -3947,7 +4350,7 @@ Clear cached summary writers. Currently only used for unit tests.
 
 #### `tf.train.SummaryWriterCache.get(logdir)` {#SummaryWriterCache.get}
 
-Returns the SummaryWriter for the specified directory.
+Returns the FileWriter for the specified directory.
 
 ##### Args:
 
@@ -3956,7 +4359,7 @@ Returns the SummaryWriter for the specified directory.
 
 ##### Returns:
 
-  A `SummaryWriter`.
+  A `FileWriter`.
 
 
 
@@ -3982,7 +4385,7 @@ Example: Print selected summary values.
 # This example supposes that the events file contains summaries with a
 # summary value tag 'loss'.  These could have been added by calling
 # `add_summary()`, passing the output of a scalar summary op created with
-# with: `tf.scalar_summary(['loss'], loss_tensor)`.
+# with: `tf.summary.scalar('loss', loss_tensor)`.
 for e in tf.train.summary_iterator(path to events file):
     for v in e.summary.value:
         if v.tag == 'loss':
@@ -4218,21 +4621,25 @@ such as saving a last checkpoint.
 
 ### `class tf.train.LoggingTensorHook` {#LoggingTensorHook}
 
-Prints given tensors every N iteration.
+Prints the given tensors once every N local steps or once every N seconds.
 
 The tensors will be printed to the log, with `INFO` severity.
 - - -
 
-#### `tf.train.LoggingTensorHook.__init__(tensors, every_n_iter=100)` {#LoggingTensorHook.__init__}
+#### `tf.train.LoggingTensorHook.__init__(tensors, every_n_iter=None, every_n_secs=None)` {#LoggingTensorHook.__init__}
 
 Initializes a LoggingHook monitor.
 
 ##### Args:
 
 
-*  <b>`tensors`</b>: `dict` of tag to tensors/names or
-      `iterable` of tensors/names.
-*  <b>`every_n_iter`</b>: `int`, print every N iteration.
+*  <b>`tensors`</b>: `dict` that maps string-valued tags to tensors/tensor names,
+      or `iterable` of tensors/tensor names.
+*  <b>`every_n_iter`</b>: `int`, print the values of `tensors` once every N local
+      steps taken on the current worker.
+*  <b>`every_n_secs`</b>: `int` or `float`, print the values of `tensors` once every N
+      seconds. Exactly one of `every_n_iter` and `every_n_secs` should be
+      provided.
 
 ##### Raises:
 
@@ -4417,7 +4824,7 @@ Initialize CheckpointSaverHook monitor.
 Steps per second monitor.
 - - -
 
-#### `tf.train.StepCounterHook.__init__(every_n_steps=100, output_dir=None, summary_writer=None)` {#StepCounterHook.__init__}
+#### `tf.train.StepCounterHook.__init__(every_n_steps=100, every_n_secs=None, output_dir=None, summary_writer=None)` {#StepCounterHook.__init__}
 
 
 
@@ -4558,9 +4965,11 @@ Initializes a `SummarySaver` monitor.
 *  <b>`summary_writer`</b>: `SummaryWriter`. If `None` and an `output_dir` was passed,
       one will be created accordingly.
 *  <b>`scaffold`</b>: `Scaffold` to get summary_op if it's not provided.
-*  <b>`summary_op`</b>: `Tensor` of type `string`. A serialized `Summary` protocol
-      buffer, as output by TF summary methods like `tf.summary.scalar` or
-      `tf.summary.merge_all`.
+*  <b>`summary_op`</b>: `Tensor` of type `string` containing the serialized `Summary`
+      protocol buffer or a list of `Tensor`. They are most likely an output
+      by TF summary methods like `tf.summary.scalar` or
+      `tf.summary.merge_all`. It can be passed in as one tensor; if more
+      than one, they must be passed in as a list.
 
 ##### Raises:
 
@@ -4599,6 +5008,77 @@ Initializes a `SummarySaver` monitor.
 
 - - -
 
+### `class tf.train.GlobalStepWaiterHook` {#GlobalStepWaiterHook}
+
+Delay execution until global step reaches to wait_until_step.
+
+This hook delays execution until global step reaches to `wait_until_step`. It
+is used to gradually start workers in distributed settings. One example usage
+would be setting `wait_until_step=int(K*log(task_id+1))` assuming that
+task_id=0 is the chief.
+- - -
+
+#### `tf.train.GlobalStepWaiterHook.__init__(wait_until_step)` {#GlobalStepWaiterHook.__init__}
+
+Create a _GlobalStepWaiterHook.
+
+##### Args:
+
+
+*  <b>`wait_until_step`</b>: an `int` shows until which global step should we wait.
+
+
+- - -
+
+#### `tf.train.GlobalStepWaiterHook.after_run(run_context, run_values)` {#GlobalStepWaiterHook.after_run}
+
+Called after each call to run().
+
+The `run_values` argument contains results of requested ops/tensors by
+`before_run()`.
+
+The `run_context` argument is the same one send to `before_run` call.
+`run_context.request_stop()` can be called to stop the iteration.
+
+##### Args:
+
+
+*  <b>`run_context`</b>: A `SessionRunContext` object.
+*  <b>`run_values`</b>: A SessionRunValues object.
+
+
+- - -
+
+#### `tf.train.GlobalStepWaiterHook.before_run(run_context)` {#GlobalStepWaiterHook.before_run}
+
+
+
+
+- - -
+
+#### `tf.train.GlobalStepWaiterHook.begin()` {#GlobalStepWaiterHook.begin}
+
+
+
+
+- - -
+
+#### `tf.train.GlobalStepWaiterHook.end(session)` {#GlobalStepWaiterHook.end}
+
+Called at the end of session.
+
+The `session` argument can be used in case the hook wants to run final ops,
+such as saving a last checkpoint.
+
+##### Args:
+
+
+*  <b>`session`</b>: A TensorFlow Session that will be soon closed.
+
+
+
+- - -
+
 ### `class tf.train.SessionRunArgs` {#SessionRunArgs}
 
 Represents arguments to be added to a `Session.run()` call.
@@ -4614,6 +5094,8 @@ Args:
       fetches = {'step': global_step_tensor,
                  'ops': [train_op, check_nan_op]}
   feed_dict: Exactly like the `feed_dict` argument to `Session.Run()`
+  options: Exactly like the `options` argument to `Session.run()`, i.e., a
+    config_pb2.RunOptions proto.
 - - -
 
 #### `tf.train.SessionRunArgs.__getnewargs__()` {#SessionRunArgs.__getnewargs__}
@@ -4630,7 +5112,7 @@ Exclude the OrderedDict from pickling
 
 - - -
 
-#### `tf.train.SessionRunArgs.__new__(cls, fetches, feed_dict=None)` {#SessionRunArgs.__new__}
+#### `tf.train.SessionRunArgs.__new__(cls, fetches, feed_dict=None, options=None)` {#SessionRunArgs.__new__}
 
 
 
@@ -4654,6 +5136,13 @@ Alias for field number 1
 #### `tf.train.SessionRunArgs.fetches` {#SessionRunArgs.fetches}
 
 Alias for field number 0
+
+
+- - -
+
+#### `tf.train.SessionRunArgs.options` {#SessionRunArgs.options}
+
+Alias for field number 2
 
 
 
@@ -4738,6 +5227,8 @@ Args:
       => results = [None, nparray(string), nparray(int)]
       fetches = {'step': global_step_tensor, 'summ': summary_op}
       => results = {'step': nparray(int), 'summ': nparray(string)}
+  options: `RunOptions` from the `Session.run()` call.
+  run_metadata: `RunMetadata` from the `Session.run()` call.
 - - -
 
 #### `tf.train.SessionRunValues.__getnewargs__()` {#SessionRunValues.__getnewargs__}
@@ -4754,9 +5245,9 @@ Exclude the OrderedDict from pickling
 
 - - -
 
-#### `tf.train.SessionRunValues.__new__(_cls, results)` {#SessionRunValues.__new__}
+#### `tf.train.SessionRunValues.__new__(_cls, results, options, run_metadata)` {#SessionRunValues.__new__}
 
-Create new instance of SessionRunValues(results,)
+Create new instance of SessionRunValues(results, options, run_metadata)
 
 
 - - -
@@ -4768,9 +5259,23 @@ Return a nicely formatted representation string
 
 - - -
 
+#### `tf.train.SessionRunValues.options` {#SessionRunValues.options}
+
+Alias for field number 1
+
+
+- - -
+
 #### `tf.train.SessionRunValues.results` {#SessionRunValues.results}
 
 Alias for field number 0
+
+
+- - -
+
+#### `tf.train.SessionRunValues.run_metadata` {#SessionRunValues.run_metadata}
+
+Alias for field number 2
 
 
 

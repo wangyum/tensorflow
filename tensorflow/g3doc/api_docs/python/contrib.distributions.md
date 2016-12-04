@@ -1,6 +1,6 @@
 <!-- This file is machine generated: DO NOT EDIT! -->
 
-# Statistical distributions (contrib)
+# Statistical Distributions (contrib)
 [TOC]
 
 Classes representing statistical distributions and ops for working with them.
@@ -229,6 +229,29 @@ cdf(x) := P[X <= x]
 
 *  <b>`cdf`</b>: a `Tensor` of shape `sample_shape(x) + self.batch_shape` with
     values of type `self.dtype`.
+
+
+- - -
+
+#### `tf.contrib.distributions.Distribution.copy(**override_parameters_kwargs)` {#Distribution.copy}
+
+Creates a deep copy of the distribution.
+
+Note: the copy distribution may continue to depend on the original
+intialization arguments.
+
+##### Args:
+
+
+*  <b>`**override_parameters_kwargs`</b>: String/value dictionary of initialization
+    arguments to override with new values.
+
+##### Returns:
+
+
+*  <b>`distribution`</b>: A new instance of `type(self)` intitialized from the union
+    of self.parameters and override_parameters_kwargs, i.e.,
+    `dict(self.parameters, **override_parameters_kwargs)`.
 
 
 - - -
@@ -842,6 +865,29 @@ cdf(x) := P[X <= x]
 
 - - -
 
+#### `tf.contrib.distributions.Binomial.copy(**override_parameters_kwargs)` {#Binomial.copy}
+
+Creates a deep copy of the distribution.
+
+Note: the copy distribution may continue to depend on the original
+intialization arguments.
+
+##### Args:
+
+
+*  <b>`**override_parameters_kwargs`</b>: String/value dictionary of initialization
+    arguments to override with new values.
+
+##### Returns:
+
+
+*  <b>`distribution`</b>: A new instance of `type(self)` intitialized from the union
+    of self.parameters and override_parameters_kwargs, i.e.,
+    `dict(self.parameters, **override_parameters_kwargs)`.
+
+
+- - -
+
 #### `tf.contrib.distributions.Binomial.dtype` {#Binomial.dtype}
 
 The `DType` of `Tensor`s handled by this `Distribution`.
@@ -1444,6 +1490,29 @@ cdf(x) := P[X <= x]
 
 - - -
 
+#### `tf.contrib.distributions.Bernoulli.copy(**override_parameters_kwargs)` {#Bernoulli.copy}
+
+Creates a deep copy of the distribution.
+
+Note: the copy distribution may continue to depend on the original
+intialization arguments.
+
+##### Args:
+
+
+*  <b>`**override_parameters_kwargs`</b>: String/value dictionary of initialization
+    arguments to override with new values.
+
+##### Returns:
+
+
+*  <b>`distribution`</b>: A new instance of `type(self)` intitialized from the union
+    of self.parameters and override_parameters_kwargs, i.e.,
+    `dict(self.parameters, **override_parameters_kwargs)`.
+
+
+- - -
+
 #### `tf.contrib.distributions.Bernoulli.dtype` {#Bernoulli.dtype}
 
 The `DType` of `Tensor`s handled by this `Distribution`.
@@ -1985,6 +2054,29 @@ cdf(x) := P[X <= x]
 
 *  <b>`cdf`</b>: a `Tensor` of shape `sample_shape(x) + self.batch_shape` with
     values of type `self.dtype`.
+
+
+- - -
+
+#### `tf.contrib.distributions.BernoulliWithSigmoidP.copy(**override_parameters_kwargs)` {#BernoulliWithSigmoidP.copy}
+
+Creates a deep copy of the distribution.
+
+Note: the copy distribution may continue to depend on the original
+intialization arguments.
+
+##### Args:
+
+
+*  <b>`**override_parameters_kwargs`</b>: String/value dictionary of initialization
+    arguments to override with new values.
+
+##### Returns:
+
+
+*  <b>`distribution`</b>: A new instance of `type(self)` intitialized from the union
+    of self.parameters and override_parameters_kwargs, i.e.,
+    `dict(self.parameters, **override_parameters_kwargs)`.
 
 
 - - -
@@ -2644,6 +2736,29 @@ cdf(x) := P[X <= x]
 
 - - -
 
+#### `tf.contrib.distributions.Beta.copy(**override_parameters_kwargs)` {#Beta.copy}
+
+Creates a deep copy of the distribution.
+
+Note: the copy distribution may continue to depend on the original
+intialization arguments.
+
+##### Args:
+
+
+*  <b>`**override_parameters_kwargs`</b>: String/value dictionary of initialization
+    arguments to override with new values.
+
+##### Returns:
+
+
+*  <b>`distribution`</b>: A new instance of `type(self)` intitialized from the union
+    of self.parameters and override_parameters_kwargs, i.e.,
+    `dict(self.parameters, **override_parameters_kwargs)`.
+
+
+- - -
+
 #### `tf.contrib.distributions.Beta.dtype` {#Beta.dtype}
 
 The `DType` of `Tensor`s handled by this `Distribution`.
@@ -3204,6 +3319,29 @@ cdf(x) := P[X <= x]
 
 *  <b>`cdf`</b>: a `Tensor` of shape `sample_shape(x) + self.batch_shape` with
     values of type `self.dtype`.
+
+
+- - -
+
+#### `tf.contrib.distributions.BetaWithSoftplusAB.copy(**override_parameters_kwargs)` {#BetaWithSoftplusAB.copy}
+
+Creates a deep copy of the distribution.
+
+Note: the copy distribution may continue to depend on the original
+intialization arguments.
+
+##### Args:
+
+
+*  <b>`**override_parameters_kwargs`</b>: String/value dictionary of initialization
+    arguments to override with new values.
+
+##### Returns:
+
+
+*  <b>`distribution`</b>: A new instance of `type(self)` intitialized from the union
+    of self.parameters and override_parameters_kwargs, i.e.,
+    `dict(self.parameters, **override_parameters_kwargs)`.
 
 
 - - -
@@ -3811,6 +3949,29 @@ cdf(x) := P[X <= x]
 
 - - -
 
+#### `tf.contrib.distributions.Categorical.copy(**override_parameters_kwargs)` {#Categorical.copy}
+
+Creates a deep copy of the distribution.
+
+Note: the copy distribution may continue to depend on the original
+intialization arguments.
+
+##### Args:
+
+
+*  <b>`**override_parameters_kwargs`</b>: String/value dictionary of initialization
+    arguments to override with new values.
+
+##### Returns:
+
+
+*  <b>`distribution`</b>: A new instance of `type(self)` intitialized from the union
+    of self.parameters and override_parameters_kwargs, i.e.,
+    `dict(self.parameters, **override_parameters_kwargs)`.
+
+
+- - -
+
 #### `tf.contrib.distributions.Categorical.dtype` {#Categorical.dtype}
 
 The `DType` of `Tensor`s handled by this `Distribution`.
@@ -4390,6 +4551,29 @@ cdf(x) := P[X <= x]
 
 - - -
 
+#### `tf.contrib.distributions.Chi2.copy(**override_parameters_kwargs)` {#Chi2.copy}
+
+Creates a deep copy of the distribution.
+
+Note: the copy distribution may continue to depend on the original
+intialization arguments.
+
+##### Args:
+
+
+*  <b>`**override_parameters_kwargs`</b>: String/value dictionary of initialization
+    arguments to override with new values.
+
+##### Returns:
+
+
+*  <b>`distribution`</b>: A new instance of `type(self)` intitialized from the union
+    of self.parameters and override_parameters_kwargs, i.e.,
+    `dict(self.parameters, **override_parameters_kwargs)`.
+
+
+- - -
+
 #### `tf.contrib.distributions.Chi2.df` {#Chi2.df}
 
 
@@ -4949,6 +5133,29 @@ cdf(x) := P[X <= x]
 
 *  <b>`cdf`</b>: a `Tensor` of shape `sample_shape(x) + self.batch_shape` with
     values of type `self.dtype`.
+
+
+- - -
+
+#### `tf.contrib.distributions.Chi2WithAbsDf.copy(**override_parameters_kwargs)` {#Chi2WithAbsDf.copy}
+
+Creates a deep copy of the distribution.
+
+Note: the copy distribution may continue to depend on the original
+intialization arguments.
+
+##### Args:
+
+
+*  <b>`**override_parameters_kwargs`</b>: String/value dictionary of initialization
+    arguments to override with new values.
+
+##### Returns:
+
+
+*  <b>`distribution`</b>: A new instance of `type(self)` intitialized from the union
+    of self.parameters and override_parameters_kwargs, i.e.,
+    `dict(self.parameters, **override_parameters_kwargs)`.
 
 
 - - -
@@ -5538,6 +5745,29 @@ cdf(x) := P[X <= x]
 
 - - -
 
+#### `tf.contrib.distributions.Exponential.copy(**override_parameters_kwargs)` {#Exponential.copy}
+
+Creates a deep copy of the distribution.
+
+Note: the copy distribution may continue to depend on the original
+intialization arguments.
+
+##### Args:
+
+
+*  <b>`**override_parameters_kwargs`</b>: String/value dictionary of initialization
+    arguments to override with new values.
+
+##### Returns:
+
+
+*  <b>`distribution`</b>: A new instance of `type(self)` intitialized from the union
+    of self.parameters and override_parameters_kwargs, i.e.,
+    `dict(self.parameters, **override_parameters_kwargs)`.
+
+
+- - -
+
 #### `tf.contrib.distributions.Exponential.dtype` {#Exponential.dtype}
 
 The `DType` of `Tensor`s handled by this `Distribution`.
@@ -6097,6 +6327,29 @@ cdf(x) := P[X <= x]
 
 *  <b>`cdf`</b>: a `Tensor` of shape `sample_shape(x) + self.batch_shape` with
     values of type `self.dtype`.
+
+
+- - -
+
+#### `tf.contrib.distributions.ExponentialWithSoftplusLam.copy(**override_parameters_kwargs)` {#ExponentialWithSoftplusLam.copy}
+
+Creates a deep copy of the distribution.
+
+Note: the copy distribution may continue to depend on the original
+intialization arguments.
+
+##### Args:
+
+
+*  <b>`**override_parameters_kwargs`</b>: String/value dictionary of initialization
+    arguments to override with new values.
+
+##### Returns:
+
+
+*  <b>`distribution`</b>: A new instance of `type(self)` intitialized from the union
+    of self.parameters and override_parameters_kwargs, i.e.,
+    `dict(self.parameters, **override_parameters_kwargs)`.
 
 
 - - -
@@ -6713,6 +6966,29 @@ cdf(x) := P[X <= x]
 
 - - -
 
+#### `tf.contrib.distributions.Gamma.copy(**override_parameters_kwargs)` {#Gamma.copy}
+
+Creates a deep copy of the distribution.
+
+Note: the copy distribution may continue to depend on the original
+intialization arguments.
+
+##### Args:
+
+
+*  <b>`**override_parameters_kwargs`</b>: String/value dictionary of initialization
+    arguments to override with new values.
+
+##### Returns:
+
+
+*  <b>`distribution`</b>: A new instance of `type(self)` intitialized from the union
+    of self.parameters and override_parameters_kwargs, i.e.,
+    `dict(self.parameters, **override_parameters_kwargs)`.
+
+
+- - -
+
 #### `tf.contrib.distributions.Gamma.dtype` {#Gamma.dtype}
 
 The `DType` of `Tensor`s handled by this `Distribution`.
@@ -7265,6 +7541,29 @@ cdf(x) := P[X <= x]
 
 *  <b>`cdf`</b>: a `Tensor` of shape `sample_shape(x) + self.batch_shape` with
     values of type `self.dtype`.
+
+
+- - -
+
+#### `tf.contrib.distributions.GammaWithSoftplusAlphaBeta.copy(**override_parameters_kwargs)` {#GammaWithSoftplusAlphaBeta.copy}
+
+Creates a deep copy of the distribution.
+
+Note: the copy distribution may continue to depend on the original
+intialization arguments.
+
+##### Args:
+
+
+*  <b>`**override_parameters_kwargs`</b>: String/value dictionary of initialization
+    arguments to override with new values.
+
+##### Returns:
+
+
+*  <b>`distribution`</b>: A new instance of `type(self)` intitialized from the union
+    of self.parameters and override_parameters_kwargs, i.e.,
+    `dict(self.parameters, **override_parameters_kwargs)`.
 
 
 - - -
@@ -7870,6 +8169,29 @@ cdf(x) := P[X <= x]
 
 - - -
 
+#### `tf.contrib.distributions.InverseGamma.copy(**override_parameters_kwargs)` {#InverseGamma.copy}
+
+Creates a deep copy of the distribution.
+
+Note: the copy distribution may continue to depend on the original
+intialization arguments.
+
+##### Args:
+
+
+*  <b>`**override_parameters_kwargs`</b>: String/value dictionary of initialization
+    arguments to override with new values.
+
+##### Returns:
+
+
+*  <b>`distribution`</b>: A new instance of `type(self)` intitialized from the union
+    of self.parameters and override_parameters_kwargs, i.e.,
+    `dict(self.parameters, **override_parameters_kwargs)`.
+
+
+- - -
+
 #### `tf.contrib.distributions.InverseGamma.dtype` {#InverseGamma.dtype}
 
 The `DType` of `Tensor`s handled by this `Distribution`.
@@ -8432,6 +8754,29 @@ cdf(x) := P[X <= x]
 
 *  <b>`cdf`</b>: a `Tensor` of shape `sample_shape(x) + self.batch_shape` with
     values of type `self.dtype`.
+
+
+- - -
+
+#### `tf.contrib.distributions.InverseGammaWithSoftplusAlphaBeta.copy(**override_parameters_kwargs)` {#InverseGammaWithSoftplusAlphaBeta.copy}
+
+Creates a deep copy of the distribution.
+
+Note: the copy distribution may continue to depend on the original
+intialization arguments.
+
+##### Args:
+
+
+*  <b>`**override_parameters_kwargs`</b>: String/value dictionary of initialization
+    arguments to override with new values.
+
+##### Returns:
+
+
+*  <b>`distribution`</b>: A new instance of `type(self)` intitialized from the union
+    of self.parameters and override_parameters_kwargs, i.e.,
+    `dict(self.parameters, **override_parameters_kwargs)`.
 
 
 - - -
@@ -9021,6 +9366,29 @@ cdf(x) := P[X <= x]
 
 - - -
 
+#### `tf.contrib.distributions.Laplace.copy(**override_parameters_kwargs)` {#Laplace.copy}
+
+Creates a deep copy of the distribution.
+
+Note: the copy distribution may continue to depend on the original
+intialization arguments.
+
+##### Args:
+
+
+*  <b>`**override_parameters_kwargs`</b>: String/value dictionary of initialization
+    arguments to override with new values.
+
+##### Returns:
+
+
+*  <b>`distribution`</b>: A new instance of `type(self)` intitialized from the union
+    of self.parameters and override_parameters_kwargs, i.e.,
+    `dict(self.parameters, **override_parameters_kwargs)`.
+
+
+- - -
+
 #### `tf.contrib.distributions.Laplace.dtype` {#Laplace.dtype}
 
 The `DType` of `Tensor`s handled by this `Distribution`.
@@ -9551,6 +9919,29 @@ cdf(x) := P[X <= x]
 
 *  <b>`cdf`</b>: a `Tensor` of shape `sample_shape(x) + self.batch_shape` with
     values of type `self.dtype`.
+
+
+- - -
+
+#### `tf.contrib.distributions.LaplaceWithSoftplusScale.copy(**override_parameters_kwargs)` {#LaplaceWithSoftplusScale.copy}
+
+Creates a deep copy of the distribution.
+
+Note: the copy distribution may continue to depend on the original
+intialization arguments.
+
+##### Args:
+
+
+*  <b>`**override_parameters_kwargs`</b>: String/value dictionary of initialization
+    arguments to override with new values.
+
+##### Returns:
+
+
+*  <b>`distribution`</b>: A new instance of `type(self)` intitialized from the union
+    of self.parameters and override_parameters_kwargs, i.e.,
+    `dict(self.parameters, **override_parameters_kwargs)`.
 
 
 - - -
@@ -10153,6 +10544,29 @@ cdf(x) := P[X <= x]
 
 - - -
 
+#### `tf.contrib.distributions.Normal.copy(**override_parameters_kwargs)` {#Normal.copy}
+
+Creates a deep copy of the distribution.
+
+Note: the copy distribution may continue to depend on the original
+intialization arguments.
+
+##### Args:
+
+
+*  <b>`**override_parameters_kwargs`</b>: String/value dictionary of initialization
+    arguments to override with new values.
+
+##### Returns:
+
+
+*  <b>`distribution`</b>: A new instance of `type(self)` intitialized from the union
+    of self.parameters and override_parameters_kwargs, i.e.,
+    `dict(self.parameters, **override_parameters_kwargs)`.
+
+
+- - -
+
 #### `tf.contrib.distributions.Normal.dtype` {#Normal.dtype}
 
 The `DType` of `Tensor`s handled by this `Distribution`.
@@ -10683,6 +11097,29 @@ cdf(x) := P[X <= x]
 
 *  <b>`cdf`</b>: a `Tensor` of shape `sample_shape(x) + self.batch_shape` with
     values of type `self.dtype`.
+
+
+- - -
+
+#### `tf.contrib.distributions.NormalWithSoftplusSigma.copy(**override_parameters_kwargs)` {#NormalWithSoftplusSigma.copy}
+
+Creates a deep copy of the distribution.
+
+Note: the copy distribution may continue to depend on the original
+intialization arguments.
+
+##### Args:
+
+
+*  <b>`**override_parameters_kwargs`</b>: String/value dictionary of initialization
+    arguments to override with new values.
+
+##### Returns:
+
+
+*  <b>`distribution`</b>: A new instance of `type(self)` intitialized from the union
+    of self.parameters and override_parameters_kwargs, i.e.,
+    `dict(self.parameters, **override_parameters_kwargs)`.
 
 
 - - -
@@ -11241,6 +11678,29 @@ cdf(x) := P[X <= x]
 
 *  <b>`cdf`</b>: a `Tensor` of shape `sample_shape(x) + self.batch_shape` with
     values of type `self.dtype`.
+
+
+- - -
+
+#### `tf.contrib.distributions.Poisson.copy(**override_parameters_kwargs)` {#Poisson.copy}
+
+Creates a deep copy of the distribution.
+
+Note: the copy distribution may continue to depend on the original
+intialization arguments.
+
+##### Args:
+
+
+*  <b>`**override_parameters_kwargs`</b>: String/value dictionary of initialization
+    arguments to override with new values.
+
+##### Returns:
+
+
+*  <b>`distribution`</b>: A new instance of `type(self)` intitialized from the union
+    of self.parameters and override_parameters_kwargs, i.e.,
+    `dict(self.parameters, **override_parameters_kwargs)`.
 
 
 - - -
@@ -11864,6 +12324,29 @@ cdf(x) := P[X <= x]
 
 - - -
 
+#### `tf.contrib.distributions.StudentT.copy(**override_parameters_kwargs)` {#StudentT.copy}
+
+Creates a deep copy of the distribution.
+
+Note: the copy distribution may continue to depend on the original
+intialization arguments.
+
+##### Args:
+
+
+*  <b>`**override_parameters_kwargs`</b>: String/value dictionary of initialization
+    arguments to override with new values.
+
+##### Returns:
+
+
+*  <b>`distribution`</b>: A new instance of `type(self)` intitialized from the union
+    of self.parameters and override_parameters_kwargs, i.e.,
+    `dict(self.parameters, **override_parameters_kwargs)`.
+
+
+- - -
+
 #### `tf.contrib.distributions.StudentT.df` {#StudentT.df}
 
 Degrees of freedom in these Student's t distribution(s).
@@ -12417,6 +12900,29 @@ cdf(x) := P[X <= x]
 
 *  <b>`cdf`</b>: a `Tensor` of shape `sample_shape(x) + self.batch_shape` with
     values of type `self.dtype`.
+
+
+- - -
+
+#### `tf.contrib.distributions.StudentTWithAbsDfSoftplusSigma.copy(**override_parameters_kwargs)` {#StudentTWithAbsDfSoftplusSigma.copy}
+
+Creates a deep copy of the distribution.
+
+Note: the copy distribution may continue to depend on the original
+intialization arguments.
+
+##### Args:
+
+
+*  <b>`**override_parameters_kwargs`</b>: String/value dictionary of initialization
+    arguments to override with new values.
+
+##### Returns:
+
+
+*  <b>`distribution`</b>: A new instance of `type(self)` intitialized from the union
+    of self.parameters and override_parameters_kwargs, i.e.,
+    `dict(self.parameters, **override_parameters_kwargs)`.
 
 
 - - -
@@ -13034,6 +13540,29 @@ cdf(x) := P[X <= x]
 
 - - -
 
+#### `tf.contrib.distributions.Uniform.copy(**override_parameters_kwargs)` {#Uniform.copy}
+
+Creates a deep copy of the distribution.
+
+Note: the copy distribution may continue to depend on the original
+intialization arguments.
+
+##### Args:
+
+
+*  <b>`**override_parameters_kwargs`</b>: String/value dictionary of initialization
+    arguments to override with new values.
+
+##### Returns:
+
+
+*  <b>`distribution`</b>: A new instance of `type(self)` intitialized from the union
+    of self.parameters and override_parameters_kwargs, i.e.,
+    `dict(self.parameters, **override_parameters_kwargs)`.
+
+
+- - -
+
 #### `tf.contrib.distributions.Uniform.dtype` {#Uniform.dtype}
 
 The `DType` of `Tensor`s handled by this `Distribution`.
@@ -13631,6 +14160,29 @@ cdf(x) := P[X <= x]
 
 *  <b>`cdf`</b>: a `Tensor` of shape `sample_shape(x) + self.batch_shape` with
     values of type `self.dtype`.
+
+
+- - -
+
+#### `tf.contrib.distributions.MultivariateNormalDiag.copy(**override_parameters_kwargs)` {#MultivariateNormalDiag.copy}
+
+Creates a deep copy of the distribution.
+
+Note: the copy distribution may continue to depend on the original
+intialization arguments.
+
+##### Args:
+
+
+*  <b>`**override_parameters_kwargs`</b>: String/value dictionary of initialization
+    arguments to override with new values.
+
+##### Returns:
+
+
+*  <b>`distribution`</b>: A new instance of `type(self)` intitialized from the union
+    of self.parameters and override_parameters_kwargs, i.e.,
+    `dict(self.parameters, **override_parameters_kwargs)`.
 
 
 - - -
@@ -14272,6 +14824,29 @@ cdf(x) := P[X <= x]
 
 *  <b>`cdf`</b>: a `Tensor` of shape `sample_shape(x) + self.batch_shape` with
     values of type `self.dtype`.
+
+
+- - -
+
+#### `tf.contrib.distributions.MultivariateNormalFull.copy(**override_parameters_kwargs)` {#MultivariateNormalFull.copy}
+
+Creates a deep copy of the distribution.
+
+Note: the copy distribution may continue to depend on the original
+intialization arguments.
+
+##### Args:
+
+
+*  <b>`**override_parameters_kwargs`</b>: String/value dictionary of initialization
+    arguments to override with new values.
+
+##### Returns:
+
+
+*  <b>`distribution`</b>: A new instance of `type(self)` intitialized from the union
+    of self.parameters and override_parameters_kwargs, i.e.,
+    `dict(self.parameters, **override_parameters_kwargs)`.
 
 
 - - -
@@ -14922,6 +15497,29 @@ cdf(x) := P[X <= x]
 
 *  <b>`cdf`</b>: a `Tensor` of shape `sample_shape(x) + self.batch_shape` with
     values of type `self.dtype`.
+
+
+- - -
+
+#### `tf.contrib.distributions.MultivariateNormalCholesky.copy(**override_parameters_kwargs)` {#MultivariateNormalCholesky.copy}
+
+Creates a deep copy of the distribution.
+
+Note: the copy distribution may continue to depend on the original
+intialization arguments.
+
+##### Args:
+
+
+*  <b>`**override_parameters_kwargs`</b>: String/value dictionary of initialization
+    arguments to override with new values.
+
+##### Returns:
+
+
+*  <b>`distribution`</b>: A new instance of `type(self)` intitialized from the union
+    of self.parameters and override_parameters_kwargs, i.e.,
+    `dict(self.parameters, **override_parameters_kwargs)`.
 
 
 - - -
@@ -15602,6 +16200,29 @@ cdf(x) := P[X <= x]
 
 - - -
 
+#### `tf.contrib.distributions.MultivariateNormalDiagPlusVDVT.copy(**override_parameters_kwargs)` {#MultivariateNormalDiagPlusVDVT.copy}
+
+Creates a deep copy of the distribution.
+
+Note: the copy distribution may continue to depend on the original
+intialization arguments.
+
+##### Args:
+
+
+*  <b>`**override_parameters_kwargs`</b>: String/value dictionary of initialization
+    arguments to override with new values.
+
+##### Returns:
+
+
+*  <b>`distribution`</b>: A new instance of `type(self)` intitialized from the union
+    of self.parameters and override_parameters_kwargs, i.e.,
+    `dict(self.parameters, **override_parameters_kwargs)`.
+
+
+- - -
+
 #### `tf.contrib.distributions.MultivariateNormalDiagPlusVDVT.dtype` {#MultivariateNormalDiagPlusVDVT.dtype}
 
 The `DType` of `Tensor`s handled by this `Distribution`.
@@ -16182,6 +16803,29 @@ cdf(x) := P[X <= x]
 
 - - -
 
+#### `tf.contrib.distributions.MultivariateNormalDiagWithSoftplusStDev.copy(**override_parameters_kwargs)` {#MultivariateNormalDiagWithSoftplusStDev.copy}
+
+Creates a deep copy of the distribution.
+
+Note: the copy distribution may continue to depend on the original
+intialization arguments.
+
+##### Args:
+
+
+*  <b>`**override_parameters_kwargs`</b>: String/value dictionary of initialization
+    arguments to override with new values.
+
+##### Returns:
+
+
+*  <b>`distribution`</b>: A new instance of `type(self)` intitialized from the union
+    of self.parameters and override_parameters_kwargs, i.e.,
+    `dict(self.parameters, **override_parameters_kwargs)`.
+
+
+- - -
+
 #### `tf.contrib.distributions.MultivariateNormalDiagWithSoftplusStDev.dtype` {#MultivariateNormalDiagWithSoftplusStDev.dtype}
 
 The `DType` of `Tensor`s handled by this `Distribution`.
@@ -16681,62 +17325,6 @@ Variance.
 
 
 
-- - -
-
-### `tf.contrib.distributions.matrix_diag_transform(matrix, transform=None, name=None)` {#matrix_diag_transform}
-
-Transform diagonal of [batch-]matrix, leave rest of matrix unchanged.
-
-Create a trainable covariance defined by a Cholesky factor:
-
-```python
-# Transform network layer into 2 x 2 array.
-matrix_values = tf.contrib.layers.fully_connected(activations, 4)
-matrix = tf.reshape(matrix_values, (batch_size, 2, 2))
-
-# Make the diagonal positive.  If the upper triangle was zero, this would be a
-# valid Cholesky factor.
-chol = matrix_diag_transform(matrix, transform=tf.nn.softplus)
-
-# OperatorPDCholesky ignores the upper triangle.
-operator = OperatorPDCholesky(chol)
-```
-
-Example of heteroskedastic 2-D linear regression.
-
-```python
-# Get a trainable Cholesky factor.
-matrix_values = tf.contrib.layers.fully_connected(activations, 4)
-matrix = tf.reshape(matrix_values, (batch_size, 2, 2))
-chol = matrix_diag_transform(matrix, transform=tf.nn.softplus)
-
-# Get a trainable mean.
-mu = tf.contrib.layers.fully_connected(activations, 2)
-
-# This is a fully trainable multivariate normal!
-dist = tf.contrib.distributions.MVNCholesky(mu, chol)
-
-# Standard log loss.  Minimizing this will "train" mu and chol, and then dist
-# will be a distribution predicting labels as multivariate Gaussians.
-loss = -1 * tf.reduce_mean(dist.log_pdf(labels))
-```
-
-##### Args:
-
-
-*  <b>`matrix`</b>: Rank `R` `Tensor`, `R >= 2`, where the last two dimensions are
-    equal.
-*  <b>`transform`</b>: Element-wise function mapping `Tensors` to `Tensors`.  To
-    be applied to the diagonal of `matrix`.  If `None`, `matrix` is returned
-    unchanged.  Defaults to `None`.
-*  <b>`name`</b>: A name to give created ops.
-    Defaults to "matrix_diag_transform".
-
-##### Returns:
-
-  A `Tensor` with same shape and `dtype` as `matrix`.
-
-
 
 ### Other multivariate distributions
 
@@ -16918,6 +17506,29 @@ cdf(x) := P[X <= x]
 
 *  <b>`cdf`</b>: a `Tensor` of shape `sample_shape(x) + self.batch_shape` with
     values of type `self.dtype`.
+
+
+- - -
+
+#### `tf.contrib.distributions.Dirichlet.copy(**override_parameters_kwargs)` {#Dirichlet.copy}
+
+Creates a deep copy of the distribution.
+
+Note: the copy distribution may continue to depend on the original
+intialization arguments.
+
+##### Args:
+
+
+*  <b>`**override_parameters_kwargs`</b>: String/value dictionary of initialization
+    arguments to override with new values.
+
+##### Returns:
+
+
+*  <b>`distribution`</b>: A new instance of `type(self)` intitialized from the union
+    of self.parameters and override_parameters_kwargs, i.e.,
+    `dict(self.parameters, **override_parameters_kwargs)`.
 
 
 - - -
@@ -17574,6 +18185,29 @@ cdf(x) := P[X <= x]
 
 *  <b>`cdf`</b>: a `Tensor` of shape `sample_shape(x) + self.batch_shape` with
     values of type `self.dtype`.
+
+
+- - -
+
+#### `tf.contrib.distributions.DirichletMultinomial.copy(**override_parameters_kwargs)` {#DirichletMultinomial.copy}
+
+Creates a deep copy of the distribution.
+
+Note: the copy distribution may continue to depend on the original
+intialization arguments.
+
+##### Args:
+
+
+*  <b>`**override_parameters_kwargs`</b>: String/value dictionary of initialization
+    arguments to override with new values.
+
+##### Returns:
+
+
+*  <b>`distribution`</b>: A new instance of `type(self)` intitialized from the union
+    of self.parameters and override_parameters_kwargs, i.e.,
+    `dict(self.parameters, **override_parameters_kwargs)`.
 
 
 - - -
@@ -18249,6 +18883,29 @@ cdf(x) := P[X <= x]
 
 - - -
 
+#### `tf.contrib.distributions.Multinomial.copy(**override_parameters_kwargs)` {#Multinomial.copy}
+
+Creates a deep copy of the distribution.
+
+Note: the copy distribution may continue to depend on the original
+intialization arguments.
+
+##### Args:
+
+
+*  <b>`**override_parameters_kwargs`</b>: String/value dictionary of initialization
+    arguments to override with new values.
+
+##### Returns:
+
+
+*  <b>`distribution`</b>: A new instance of `type(self)` intitialized from the union
+    of self.parameters and override_parameters_kwargs, i.e.,
+    `dict(self.parameters, **override_parameters_kwargs)`.
+
+
+- - -
+
 #### `tf.contrib.distributions.Multinomial.dtype` {#Multinomial.dtype}
 
 The `DType` of `Tensor`s handled by this `Distribution`.
@@ -18908,6 +19565,29 @@ Boolean indicating if `Tensor` input/outputs are Cholesky factorized.
 
 - - -
 
+#### `tf.contrib.distributions.WishartCholesky.copy(**override_parameters_kwargs)` {#WishartCholesky.copy}
+
+Creates a deep copy of the distribution.
+
+Note: the copy distribution may continue to depend on the original
+intialization arguments.
+
+##### Args:
+
+
+*  <b>`**override_parameters_kwargs`</b>: String/value dictionary of initialization
+    arguments to override with new values.
+
+##### Returns:
+
+
+*  <b>`distribution`</b>: A new instance of `type(self)` intitialized from the union
+    of self.parameters and override_parameters_kwargs, i.e.,
+    `dict(self.parameters, **override_parameters_kwargs)`.
+
+
+- - -
+
 #### `tf.contrib.distributions.WishartCholesky.df` {#WishartCholesky.df}
 
 Wishart distribution degree(s) of freedom.
@@ -19552,6 +20232,29 @@ Boolean indicating if `Tensor` input/outputs are Cholesky factorized.
 
 - - -
 
+#### `tf.contrib.distributions.WishartFull.copy(**override_parameters_kwargs)` {#WishartFull.copy}
+
+Creates a deep copy of the distribution.
+
+Note: the copy distribution may continue to depend on the original
+intialization arguments.
+
+##### Args:
+
+
+*  <b>`**override_parameters_kwargs`</b>: String/value dictionary of initialization
+    arguments to override with new values.
+
+##### Returns:
+
+
+*  <b>`distribution`</b>: A new instance of `type(self)` intitialized from the union
+    of self.parameters and override_parameters_kwargs, i.e.,
+    `dict(self.parameters, **override_parameters_kwargs)`.
+
+
+- - -
+
 #### `tf.contrib.distributions.WishartFull.df` {#WishartFull.df}
 
 Wishart distribution degree(s) of freedom.
@@ -20034,6 +20737,65 @@ Variance.
 
 
 
+### Multivariate Utilities
+
+- - -
+
+### `tf.contrib.distributions.matrix_diag_transform(matrix, transform=None, name=None)` {#matrix_diag_transform}
+
+Transform diagonal of [batch-]matrix, leave rest of matrix unchanged.
+
+Create a trainable covariance defined by a Cholesky factor:
+
+```python
+# Transform network layer into 2 x 2 array.
+matrix_values = tf.contrib.layers.fully_connected(activations, 4)
+matrix = tf.reshape(matrix_values, (batch_size, 2, 2))
+
+# Make the diagonal positive.  If the upper triangle was zero, this would be a
+# valid Cholesky factor.
+chol = matrix_diag_transform(matrix, transform=tf.nn.softplus)
+
+# OperatorPDCholesky ignores the upper triangle.
+operator = OperatorPDCholesky(chol)
+```
+
+Example of heteroskedastic 2-D linear regression.
+
+```python
+# Get a trainable Cholesky factor.
+matrix_values = tf.contrib.layers.fully_connected(activations, 4)
+matrix = tf.reshape(matrix_values, (batch_size, 2, 2))
+chol = matrix_diag_transform(matrix, transform=tf.nn.softplus)
+
+# Get a trainable mean.
+mu = tf.contrib.layers.fully_connected(activations, 2)
+
+# This is a fully trainable multivariate normal!
+dist = tf.contrib.distributions.MVNCholesky(mu, chol)
+
+# Standard log loss.  Minimizing this will "train" mu and chol, and then dist
+# will be a distribution predicting labels as multivariate Gaussians.
+loss = -1 * tf.reduce_mean(dist.log_pdf(labels))
+```
+
+##### Args:
+
+
+*  <b>`matrix`</b>: Rank `R` `Tensor`, `R >= 2`, where the last two dimensions are
+    equal.
+*  <b>`transform`</b>: Element-wise function mapping `Tensors` to `Tensors`.  To
+    be applied to the diagonal of `matrix`.  If `None`, `matrix` is returned
+    unchanged.  Defaults to `None`.
+*  <b>`name`</b>: A name to give created ops.
+    Defaults to "matrix_diag_transform".
+
+##### Returns:
+
+  A `Tensor` with same shape and `dtype` as `matrix`.
+
+
+
 ## Transformed distributions
 
 - - -
@@ -20129,7 +20891,7 @@ log_normal = ds.TransformedDistribution(
     forward_fn=tf.exp,
     inverse_fn=tf.log,
     inverse_log_det_jacobian_fn=(
-      lambda y: -tf.reduce_sum(tf.log(x), reduction_indices=-1)),
+      lambda y: -tf.reduce_sum(tf.log(y), reduction_indices=-1)),
   name="LogNormalTransformedDistribution")
 ```
 
@@ -20151,7 +20913,7 @@ Construct a Transformed Distribution.
 ##### Args:
 
 
-*  <b>`distribution`</b>: The base distribution class to transform. Typically an
+*  <b>`distribution`</b>: The base distribution instance to transform. Typically an
     instance of `Distribution`.
 *  <b>`bijector`</b>: The object responsible for calculating the transformation.
     Typically an instance of `Bijector`.
@@ -20225,10 +20987,10 @@ cdf(x) := P[X <= x]
 
 Additional documentation from `TransformedDistribution`:
 
-##### <b>`condition_kwargs`</b>:
+##### `condition_kwargs`:
 
-*  <b>`distribution_kwargs`</b>: Python dictionary of arg names/values forwarded to the distribution.
-*  <b>`bijector_kwargs`</b>: Python dictionary of arg names/values forwarded to the bijector.
+*  `bijector_kwargs`: Python dictionary of arg names/values forwarded to the bijector.
+*  `distribution_kwargs`: Python dictionary of arg names/values forwarded to the distribution.
 
 ##### Args:
 
@@ -20242,6 +21004,29 @@ Additional documentation from `TransformedDistribution`:
 
 *  <b>`cdf`</b>: a `Tensor` of shape `sample_shape(x) + self.batch_shape` with
     values of type `self.dtype`.
+
+
+- - -
+
+#### `tf.contrib.distributions.TransformedDistribution.copy(**override_parameters_kwargs)` {#TransformedDistribution.copy}
+
+Creates a deep copy of the distribution.
+
+Note: the copy distribution may continue to depend on the original
+intialization arguments.
+
+##### Args:
+
+
+*  <b>`**override_parameters_kwargs`</b>: String/value dictionary of initialization
+    arguments to override with new values.
+
+##### Returns:
+
+
+*  <b>`distribution`</b>: A new instance of `type(self)` intitialized from the union
+    of self.parameters and override_parameters_kwargs, i.e.,
+    `dict(self.parameters, **override_parameters_kwargs)`.
 
 
 - - -
@@ -20343,10 +21128,10 @@ a more accurate answer than simply taking the logarithm of the `cdf` when
 
 Additional documentation from `TransformedDistribution`:
 
-##### <b>`condition_kwargs`</b>:
+##### `condition_kwargs`:
 
-*  <b>`distribution_kwargs`</b>: Python dictionary of arg names/values forwarded to the distribution.
-*  <b>`bijector_kwargs`</b>: Python dictionary of arg names/values forwarded to the bijector.
+*  `bijector_kwargs`: Python dictionary of arg names/values forwarded to the bijector.
+*  `distribution_kwargs`: Python dictionary of arg names/values forwarded to the distribution.
 
 ##### Args:
 
@@ -20427,10 +21212,10 @@ Implements `(log o p o g^{-1})(y) + (log o det o J o g^{-1})(y)`,
       Also raises a `ValueError` if `inverse` was not provided to the
       distribution and `y` was not returned from `sample`.
 
-##### <b>`condition_kwargs`</b>:
+##### `condition_kwargs`:
 
-*  <b>`distribution_kwargs`</b>: Python dictionary of arg names/values forwarded to the distribution.
-*  <b>`bijector_kwargs`</b>: Python dictionary of arg names/values forwarded to the bijector.
+*  `bijector_kwargs`: Python dictionary of arg names/values forwarded to the bijector.
+*  `distribution_kwargs`: Python dictionary of arg names/values forwarded to the distribution.
 
 ##### Args:
 
@@ -20466,10 +21251,10 @@ survival function, which are more accurate than `1 - cdf(x)` when `x >> 1`.
 
 Additional documentation from `TransformedDistribution`:
 
-##### <b>`condition_kwargs`</b>:
+##### `condition_kwargs`:
 
-*  <b>`distribution_kwargs`</b>: Python dictionary of arg names/values forwarded to the distribution.
-*  <b>`bijector_kwargs`</b>: Python dictionary of arg names/values forwarded to the bijector.
+*  `bijector_kwargs`: Python dictionary of arg names/values forwarded to the bijector.
+*  `distribution_kwargs`: Python dictionary of arg names/values forwarded to the distribution.
 
 ##### Args:
 
@@ -20619,10 +21404,10 @@ Implements `p(g^{-1}(y)) det|J(g^{-1}(y))|`, where `g^{-1}` is the
       Also raises a `ValueError` if `inverse` was not provided to the
       distribution and `y` was not returned from `sample`.
 
-##### <b>`condition_kwargs`</b>:
+##### `condition_kwargs`:
 
-*  <b>`distribution_kwargs`</b>: Python dictionary of arg names/values forwarded to the distribution.
-*  <b>`bijector_kwargs`</b>: Python dictionary of arg names/values forwarded to the bijector.
+*  `bijector_kwargs`: Python dictionary of arg names/values forwarded to the bijector.
+*  `distribution_kwargs`: Python dictionary of arg names/values forwarded to the distribution.
 
 ##### Args:
 
@@ -20673,10 +21458,10 @@ Additional documentation from `TransformedDistribution`:
 Samples from the base distribution and then passes through
       the bijector's forward transform.
 
-##### <b>`condition_kwargs`</b>:
+##### `condition_kwargs`:
 
-*  <b>`distribution_kwargs`</b>: Python dictionary of arg names/values forwarded to the distribution.
-*  <b>`bijector_kwargs`</b>: Python dictionary of arg names/values forwarded to the bijector.
+*  `bijector_kwargs`: Python dictionary of arg names/values forwarded to the bijector.
+*  `distribution_kwargs`: Python dictionary of arg names/values forwarded to the distribution.
 
 ##### Args:
 
@@ -20722,10 +21507,10 @@ survival_function(x) = P[X > x]
 
 Additional documentation from `TransformedDistribution`:
 
-##### <b>`condition_kwargs`</b>:
+##### `condition_kwargs`:
 
-*  <b>`distribution_kwargs`</b>: Python dictionary of arg names/values forwarded to the distribution.
-*  <b>`bijector_kwargs`</b>: Python dictionary of arg names/values forwarded to the bijector.
+*  `bijector_kwargs`: Python dictionary of arg names/values forwarded to the bijector.
+*  `distribution_kwargs`: Python dictionary of arg names/values forwarded to the distribution.
 
 ##### Args:
 
@@ -20929,6 +21714,29 @@ The base distribution's `cdf` method must be defined on `y - 1`.
 
 *  <b>`cdf`</b>: a `Tensor` of shape `sample_shape(x) + self.batch_shape` with
     values of type `self.dtype`.
+
+
+- - -
+
+#### `tf.contrib.distributions.QuantizedDistribution.copy(**override_parameters_kwargs)` {#QuantizedDistribution.copy}
+
+Creates a deep copy of the distribution.
+
+Note: the copy distribution may continue to depend on the original
+intialization arguments.
+
+##### Args:
+
+
+*  <b>`**override_parameters_kwargs`</b>: String/value dictionary of initialization
+    arguments to override with new values.
+
+##### Returns:
+
+
+*  <b>`distribution`</b>: A new instance of `type(self)` intitialized from the union
+    of self.parameters and override_parameters_kwargs, i.e.,
+    `dict(self.parameters, **override_parameters_kwargs)`.
 
 
 - - -
@@ -21614,6 +22422,29 @@ cdf(x) := P[X <= x]
 
 - - -
 
+#### `tf.contrib.distributions.Mixture.copy(**override_parameters_kwargs)` {#Mixture.copy}
+
+Creates a deep copy of the distribution.
+
+Note: the copy distribution may continue to depend on the original
+intialization arguments.
+
+##### Args:
+
+
+*  <b>`**override_parameters_kwargs`</b>: String/value dictionary of initialization
+    arguments to override with new values.
+
+##### Returns:
+
+
+*  <b>`distribution`</b>: A new instance of `type(self)` intitialized from the union
+    of self.parameters and override_parameters_kwargs, i.e.,
+    `dict(self.parameters, **override_parameters_kwargs)`.
+
+
+- - -
+
 #### `tf.contrib.distributions.Mixture.dtype` {#Mixture.dtype}
 
 The `DType` of `Tensor`s handled by this `Distribution`.
@@ -22224,13 +23055,26 @@ will broadcast in the case of multidimensional sets of parameters.
 
 
 
-## Kullback Leibler Divergence
+## Kullback-Leibler Divergence
 
 - - -
 
 ### `tf.contrib.distributions.kl(dist_a, dist_b, allow_nan=False, name=None)` {#kl}
 
 Get the KL-divergence KL(dist_a || dist_b).
+
+If there is no KL method registered specifically for `type(dist_a)` and
+`type(dist_b)`, then the class hierarchies of these types are searched.
+
+If one KL method is registered between any pairs of classes in these two
+parent hierarchies, it is used.
+
+If more than one such registered method exists, the method whose registered
+classes have the shortest sum MRO paths to the input types is used.
+
+If more than one such shortest path exists, the first method
+identified in the search is used (favoring a shorter MRO distance to
+`type(dist_a)`).
 
 ##### Args:
 
@@ -22298,1136 +23142,6 @@ Initialize the KL registrar.
 
 *  <b>`dist_cls_a`</b>: the class of the first argument of the KL divergence.
 *  <b>`dist_cls_b`</b>: the class of the second argument of the KL divergence.
-
-
-
-
-## Other Functions and Classes
-- - -
-
-### `class tf.contrib.distributions.beta_aa` {#beta_aa}
-
-Beta with softplus transform on `a` and `b`.
-- - -
-
-#### `tf.contrib.distributions.beta_aa.__init__(a, b, validate_args=False, allow_nan_stats=True, name='BetaWithSoftplusAB')` {#beta_aa.__init__}
-
-
-
-
-- - -
-
-#### `tf.contrib.distributions.beta_aa.a` {#beta_aa.a}
-
-Shape parameter.
-
-
-- - -
-
-#### `tf.contrib.distributions.beta_aa.a_b_sum` {#beta_aa.a_b_sum}
-
-Sum of parameters.
-
-
-- - -
-
-#### `tf.contrib.distributions.beta_aa.allow_nan_stats` {#beta_aa.allow_nan_stats}
-
-Python boolean describing behavior when a stat is undefined.
-
-Stats return +/- infinity when it makes sense.  E.g., the variance
-of a Cauchy distribution is infinity.  However, sometimes the
-statistic is undefined, e.g., if a distribution's pdf does not achieve a
-maximum within the support of the distribution, the mode is undefined.
-If the mean is undefined, then by definition the variance is undefined.
-E.g. the mean for Student's T for df = 1 is undefined (no clear way to say
-it is either + or - infinity), so the variance = E[(X - mean)^2] is also
-undefined.
-
-##### Returns:
-
-
-*  <b>`allow_nan_stats`</b>: Python boolean.
-
-
-- - -
-
-#### `tf.contrib.distributions.beta_aa.b` {#beta_aa.b}
-
-Shape parameter.
-
-
-- - -
-
-#### `tf.contrib.distributions.beta_aa.batch_shape(name='batch_shape')` {#beta_aa.batch_shape}
-
-Shape of a single sample from a single event index as a 1-D `Tensor`.
-
-The product of the dimensions of the `batch_shape` is the number of
-independent distributions of this kind the instance represents.
-
-##### Args:
-
-
-*  <b>`name`</b>: name to give to the op
-
-##### Returns:
-
-
-*  <b>`batch_shape`</b>: `Tensor`.
-
-
-- - -
-
-#### `tf.contrib.distributions.beta_aa.cdf(value, name='cdf', **condition_kwargs)` {#beta_aa.cdf}
-
-Cumulative distribution function.
-
-Given random variable `X`, the cumulative distribution function `cdf` is:
-
-```
-cdf(x) := P[X <= x]
-```
-
-##### Args:
-
-
-*  <b>`value`</b>: `float` or `double` `Tensor`.
-*  <b>`name`</b>: The name to give this op.
-*  <b>`**condition_kwargs`</b>: Named arguments forwarded to subclass implementation.
-
-##### Returns:
-
-
-*  <b>`cdf`</b>: a `Tensor` of shape `sample_shape(x) + self.batch_shape` with
-    values of type `self.dtype`.
-
-
-- - -
-
-#### `tf.contrib.distributions.beta_aa.dtype` {#beta_aa.dtype}
-
-The `DType` of `Tensor`s handled by this `Distribution`.
-
-
-- - -
-
-#### `tf.contrib.distributions.beta_aa.entropy(name='entropy')` {#beta_aa.entropy}
-
-Shannon entropy in nats.
-
-
-- - -
-
-#### `tf.contrib.distributions.beta_aa.event_shape(name='event_shape')` {#beta_aa.event_shape}
-
-Shape of a single sample from a single batch as a 1-D int32 `Tensor`.
-
-##### Args:
-
-
-*  <b>`name`</b>: name to give to the op
-
-##### Returns:
-
-
-*  <b>`event_shape`</b>: `Tensor`.
-
-
-- - -
-
-#### `tf.contrib.distributions.beta_aa.get_batch_shape()` {#beta_aa.get_batch_shape}
-
-Shape of a single sample from a single event index as a `TensorShape`.
-
-Same meaning as `batch_shape`. May be only partially defined.
-
-##### Returns:
-
-
-*  <b>`batch_shape`</b>: `TensorShape`, possibly unknown.
-
-
-- - -
-
-#### `tf.contrib.distributions.beta_aa.get_event_shape()` {#beta_aa.get_event_shape}
-
-Shape of a single sample from a single batch as a `TensorShape`.
-
-Same meaning as `event_shape`. May be only partially defined.
-
-##### Returns:
-
-
-*  <b>`event_shape`</b>: `TensorShape`, possibly unknown.
-
-
-- - -
-
-#### `tf.contrib.distributions.beta_aa.is_continuous` {#beta_aa.is_continuous}
-
-
-
-
-- - -
-
-#### `tf.contrib.distributions.beta_aa.is_reparameterized` {#beta_aa.is_reparameterized}
-
-
-
-
-- - -
-
-#### `tf.contrib.distributions.beta_aa.log_cdf(value, name='log_cdf', **condition_kwargs)` {#beta_aa.log_cdf}
-
-Log cumulative distribution function.
-
-Given random variable `X`, the cumulative distribution function `cdf` is:
-
-```
-log_cdf(x) := Log[ P[X <= x] ]
-```
-
-Often, a numerical approximation can be used for `log_cdf(x)` that yields
-a more accurate answer than simply taking the logarithm of the `cdf` when
-`x << -1`.
-
-
-Additional documentation from `Beta`:
-
-Note that the argument `x` must be a non-negative floating point tensor
-whose shape can be broadcast with `self.a` and `self.b`.  For fixed leading
-dimensions, the last dimension represents counts for the corresponding Beta
-distribution in `self.a` and `self.b`. `x` is only legal if `0 < x < 1`.
-
-##### Args:
-
-
-*  <b>`value`</b>: `float` or `double` `Tensor`.
-*  <b>`name`</b>: The name to give this op.
-*  <b>`**condition_kwargs`</b>: Named arguments forwarded to subclass implementation.
-
-##### Returns:
-
-
-*  <b>`logcdf`</b>: a `Tensor` of shape `sample_shape(x) + self.batch_shape` with
-    values of type `self.dtype`.
-
-
-- - -
-
-#### `tf.contrib.distributions.beta_aa.log_pdf(value, name='log_pdf', **condition_kwargs)` {#beta_aa.log_pdf}
-
-Log probability density function.
-
-##### Args:
-
-
-*  <b>`value`</b>: `float` or `double` `Tensor`.
-*  <b>`name`</b>: The name to give this op.
-*  <b>`**condition_kwargs`</b>: Named arguments forwarded to subclass implementation.
-
-##### Returns:
-
-
-*  <b>`log_prob`</b>: a `Tensor` of shape `sample_shape(x) + self.batch_shape` with
-    values of type `self.dtype`.
-
-##### Raises:
-
-
-*  <b>`TypeError`</b>: if not `is_continuous`.
-
-
-- - -
-
-#### `tf.contrib.distributions.beta_aa.log_pmf(value, name='log_pmf', **condition_kwargs)` {#beta_aa.log_pmf}
-
-Log probability mass function.
-
-##### Args:
-
-
-*  <b>`value`</b>: `float` or `double` `Tensor`.
-*  <b>`name`</b>: The name to give this op.
-*  <b>`**condition_kwargs`</b>: Named arguments forwarded to subclass implementation.
-
-##### Returns:
-
-
-*  <b>`log_pmf`</b>: a `Tensor` of shape `sample_shape(x) + self.batch_shape` with
-    values of type `self.dtype`.
-
-##### Raises:
-
-
-*  <b>`TypeError`</b>: if `is_continuous`.
-
-
-- - -
-
-#### `tf.contrib.distributions.beta_aa.log_prob(value, name='log_prob', **condition_kwargs)` {#beta_aa.log_prob}
-
-Log probability density/mass function (depending on `is_continuous`).
-
-##### Args:
-
-
-*  <b>`value`</b>: `float` or `double` `Tensor`.
-*  <b>`name`</b>: The name to give this op.
-*  <b>`**condition_kwargs`</b>: Named arguments forwarded to subclass implementation.
-
-##### Returns:
-
-
-*  <b>`log_prob`</b>: a `Tensor` of shape `sample_shape(x) + self.batch_shape` with
-    values of type `self.dtype`.
-
-
-- - -
-
-#### `tf.contrib.distributions.beta_aa.log_survival_function(value, name='log_survival_function', **condition_kwargs)` {#beta_aa.log_survival_function}
-
-Log survival function.
-
-Given random variable `X`, the survival function is defined:
-
-```
-log_survival_function(x) = Log[ P[X > x] ]
-                         = Log[ 1 - P[X <= x] ]
-                         = Log[ 1 - cdf(x) ]
-```
-
-Typically, different numerical approximations can be used for the log
-survival function, which are more accurate than `1 - cdf(x)` when `x >> 1`.
-
-##### Args:
-
-
-*  <b>`value`</b>: `float` or `double` `Tensor`.
-*  <b>`name`</b>: The name to give this op.
-*  <b>`**condition_kwargs`</b>: Named arguments forwarded to subclass implementation.
-
-##### Returns:
-
-  `Tensor` of shape `sample_shape(x) + self.batch_shape` with values of type
-    `self.dtype`.
-
-
-- - -
-
-#### `tf.contrib.distributions.beta_aa.mean(name='mean')` {#beta_aa.mean}
-
-Mean.
-
-
-- - -
-
-#### `tf.contrib.distributions.beta_aa.mode(name='mode')` {#beta_aa.mode}
-
-Mode.
-
-Additional documentation from `Beta`:
-
-Note that the mode for the Beta distribution is only defined
-when `a > 1`, `b > 1`. This returns the mode when `a > 1` and `b > 1`,
-and `NaN` otherwise. If `self.allow_nan_stats` is `False`, an exception
-will be raised rather than returning `NaN`.
-
-
-- - -
-
-#### `tf.contrib.distributions.beta_aa.name` {#beta_aa.name}
-
-Name prepended to all ops created by this `Distribution`.
-
-
-- - -
-
-#### `tf.contrib.distributions.beta_aa.param_shapes(cls, sample_shape, name='DistributionParamShapes')` {#beta_aa.param_shapes}
-
-Shapes of parameters given the desired shape of a call to `sample()`.
-
-Subclasses should override static method `_param_shapes`.
-
-##### Args:
-
-
-*  <b>`sample_shape`</b>: `Tensor` or python list/tuple. Desired shape of a call to
-    `sample()`.
-*  <b>`name`</b>: name to prepend ops with.
-
-##### Returns:
-
-  `dict` of parameter name to `Tensor` shapes.
-
-
-- - -
-
-#### `tf.contrib.distributions.beta_aa.param_static_shapes(cls, sample_shape)` {#beta_aa.param_static_shapes}
-
-param_shapes with static (i.e. TensorShape) shapes.
-
-##### Args:
-
-
-*  <b>`sample_shape`</b>: `TensorShape` or python list/tuple. Desired shape of a call
-    to `sample()`.
-
-##### Returns:
-
-  `dict` of parameter name to `TensorShape`.
-
-##### Raises:
-
-
-*  <b>`ValueError`</b>: if `sample_shape` is a `TensorShape` and is not fully defined.
-
-
-- - -
-
-#### `tf.contrib.distributions.beta_aa.parameters` {#beta_aa.parameters}
-
-Dictionary of parameters used to instantiate this `Distribution`.
-
-
-- - -
-
-#### `tf.contrib.distributions.beta_aa.pdf(value, name='pdf', **condition_kwargs)` {#beta_aa.pdf}
-
-Probability density function.
-
-##### Args:
-
-
-*  <b>`value`</b>: `float` or `double` `Tensor`.
-*  <b>`name`</b>: The name to give this op.
-*  <b>`**condition_kwargs`</b>: Named arguments forwarded to subclass implementation.
-
-##### Returns:
-
-
-*  <b>`prob`</b>: a `Tensor` of shape `sample_shape(x) + self.batch_shape` with
-    values of type `self.dtype`.
-
-##### Raises:
-
-
-*  <b>`TypeError`</b>: if not `is_continuous`.
-
-
-- - -
-
-#### `tf.contrib.distributions.beta_aa.pmf(value, name='pmf', **condition_kwargs)` {#beta_aa.pmf}
-
-Probability mass function.
-
-##### Args:
-
-
-*  <b>`value`</b>: `float` or `double` `Tensor`.
-*  <b>`name`</b>: The name to give this op.
-*  <b>`**condition_kwargs`</b>: Named arguments forwarded to subclass implementation.
-
-##### Returns:
-
-
-*  <b>`pmf`</b>: a `Tensor` of shape `sample_shape(x) + self.batch_shape` with
-    values of type `self.dtype`.
-
-##### Raises:
-
-
-*  <b>`TypeError`</b>: if `is_continuous`.
-
-
-- - -
-
-#### `tf.contrib.distributions.beta_aa.prob(value, name='prob', **condition_kwargs)` {#beta_aa.prob}
-
-Probability density/mass function (depending on `is_continuous`).
-
-
-Additional documentation from `Beta`:
-
-Note that the argument `x` must be a non-negative floating point tensor
-whose shape can be broadcast with `self.a` and `self.b`.  For fixed leading
-dimensions, the last dimension represents counts for the corresponding Beta
-distribution in `self.a` and `self.b`. `x` is only legal if `0 < x < 1`.
-
-##### Args:
-
-
-*  <b>`value`</b>: `float` or `double` `Tensor`.
-*  <b>`name`</b>: The name to give this op.
-*  <b>`**condition_kwargs`</b>: Named arguments forwarded to subclass implementation.
-
-##### Returns:
-
-
-*  <b>`prob`</b>: a `Tensor` of shape `sample_shape(x) + self.batch_shape` with
-    values of type `self.dtype`.
-
-
-- - -
-
-#### `tf.contrib.distributions.beta_aa.sample(sample_shape=(), seed=None, name='sample', **condition_kwargs)` {#beta_aa.sample}
-
-Generate samples of the specified shape.
-
-Note that a call to `sample()` without arguments will generate a single
-sample.
-
-##### Args:
-
-
-*  <b>`sample_shape`</b>: 0D or 1D `int32` `Tensor`. Shape of the generated samples.
-*  <b>`seed`</b>: Python integer seed for RNG
-*  <b>`name`</b>: name to give to the op.
-*  <b>`**condition_kwargs`</b>: Named arguments forwarded to subclass implementation.
-
-##### Returns:
-
-
-*  <b>`samples`</b>: a `Tensor` with prepended dimensions `sample_shape`.
-
-
-- - -
-
-#### `tf.contrib.distributions.beta_aa.sample_n(n, seed=None, name='sample_n', **condition_kwargs)` {#beta_aa.sample_n}
-
-Generate `n` samples.
-
-##### Args:
-
-
-*  <b>`n`</b>: `Scalar` `Tensor` of type `int32` or `int64`, the number of
-    observations to sample.
-*  <b>`seed`</b>: Python integer seed for RNG
-*  <b>`name`</b>: name to give to the op.
-*  <b>`**condition_kwargs`</b>: Named arguments forwarded to subclass implementation.
-
-##### Returns:
-
-
-*  <b>`samples`</b>: a `Tensor` with a prepended dimension (n,).
-
-##### Raises:
-
-
-*  <b>`TypeError`</b>: if `n` is not an integer type.
-
-
-- - -
-
-#### `tf.contrib.distributions.beta_aa.std(name='std')` {#beta_aa.std}
-
-Standard deviation.
-
-
-- - -
-
-#### `tf.contrib.distributions.beta_aa.survival_function(value, name='survival_function', **condition_kwargs)` {#beta_aa.survival_function}
-
-Survival function.
-
-Given random variable `X`, the survival function is defined:
-
-```
-survival_function(x) = P[X > x]
-                     = 1 - P[X <= x]
-                     = 1 - cdf(x).
-```
-
-##### Args:
-
-
-*  <b>`value`</b>: `float` or `double` `Tensor`.
-*  <b>`name`</b>: The name to give this op.
-*  <b>`**condition_kwargs`</b>: Named arguments forwarded to subclass implementation.
-
-##### Returns:
-
-  Tensor` of shape `sample_shape(x) + self.batch_shape` with values of type
-    `self.dtype`.
-
-
-- - -
-
-#### `tf.contrib.distributions.beta_aa.validate_args` {#beta_aa.validate_args}
-
-Python boolean indicated possibly expensive checks are enabled.
-
-
-- - -
-
-#### `tf.contrib.distributions.beta_aa.variance(name='variance')` {#beta_aa.variance}
-
-Variance.
-
-
-
-- - -
-
-### `class tf.contrib.distributions.beta_bb` {#beta_bb}
-
-Beta with softplus transform on `a` and `b`.
-- - -
-
-#### `tf.contrib.distributions.beta_bb.__init__(a, b, validate_args=False, allow_nan_stats=True, name='BetaWithSoftplusAB')` {#beta_bb.__init__}
-
-
-
-
-- - -
-
-#### `tf.contrib.distributions.beta_bb.a` {#beta_bb.a}
-
-Shape parameter.
-
-
-- - -
-
-#### `tf.contrib.distributions.beta_bb.a_b_sum` {#beta_bb.a_b_sum}
-
-Sum of parameters.
-
-
-- - -
-
-#### `tf.contrib.distributions.beta_bb.allow_nan_stats` {#beta_bb.allow_nan_stats}
-
-Python boolean describing behavior when a stat is undefined.
-
-Stats return +/- infinity when it makes sense.  E.g., the variance
-of a Cauchy distribution is infinity.  However, sometimes the
-statistic is undefined, e.g., if a distribution's pdf does not achieve a
-maximum within the support of the distribution, the mode is undefined.
-If the mean is undefined, then by definition the variance is undefined.
-E.g. the mean for Student's T for df = 1 is undefined (no clear way to say
-it is either + or - infinity), so the variance = E[(X - mean)^2] is also
-undefined.
-
-##### Returns:
-
-
-*  <b>`allow_nan_stats`</b>: Python boolean.
-
-
-- - -
-
-#### `tf.contrib.distributions.beta_bb.b` {#beta_bb.b}
-
-Shape parameter.
-
-
-- - -
-
-#### `tf.contrib.distributions.beta_bb.batch_shape(name='batch_shape')` {#beta_bb.batch_shape}
-
-Shape of a single sample from a single event index as a 1-D `Tensor`.
-
-The product of the dimensions of the `batch_shape` is the number of
-independent distributions of this kind the instance represents.
-
-##### Args:
-
-
-*  <b>`name`</b>: name to give to the op
-
-##### Returns:
-
-
-*  <b>`batch_shape`</b>: `Tensor`.
-
-
-- - -
-
-#### `tf.contrib.distributions.beta_bb.cdf(value, name='cdf', **condition_kwargs)` {#beta_bb.cdf}
-
-Cumulative distribution function.
-
-Given random variable `X`, the cumulative distribution function `cdf` is:
-
-```
-cdf(x) := P[X <= x]
-```
-
-##### Args:
-
-
-*  <b>`value`</b>: `float` or `double` `Tensor`.
-*  <b>`name`</b>: The name to give this op.
-*  <b>`**condition_kwargs`</b>: Named arguments forwarded to subclass implementation.
-
-##### Returns:
-
-
-*  <b>`cdf`</b>: a `Tensor` of shape `sample_shape(x) + self.batch_shape` with
-    values of type `self.dtype`.
-
-
-- - -
-
-#### `tf.contrib.distributions.beta_bb.dtype` {#beta_bb.dtype}
-
-The `DType` of `Tensor`s handled by this `Distribution`.
-
-
-- - -
-
-#### `tf.contrib.distributions.beta_bb.entropy(name='entropy')` {#beta_bb.entropy}
-
-Shannon entropy in nats.
-
-
-- - -
-
-#### `tf.contrib.distributions.beta_bb.event_shape(name='event_shape')` {#beta_bb.event_shape}
-
-Shape of a single sample from a single batch as a 1-D int32 `Tensor`.
-
-##### Args:
-
-
-*  <b>`name`</b>: name to give to the op
-
-##### Returns:
-
-
-*  <b>`event_shape`</b>: `Tensor`.
-
-
-- - -
-
-#### `tf.contrib.distributions.beta_bb.get_batch_shape()` {#beta_bb.get_batch_shape}
-
-Shape of a single sample from a single event index as a `TensorShape`.
-
-Same meaning as `batch_shape`. May be only partially defined.
-
-##### Returns:
-
-
-*  <b>`batch_shape`</b>: `TensorShape`, possibly unknown.
-
-
-- - -
-
-#### `tf.contrib.distributions.beta_bb.get_event_shape()` {#beta_bb.get_event_shape}
-
-Shape of a single sample from a single batch as a `TensorShape`.
-
-Same meaning as `event_shape`. May be only partially defined.
-
-##### Returns:
-
-
-*  <b>`event_shape`</b>: `TensorShape`, possibly unknown.
-
-
-- - -
-
-#### `tf.contrib.distributions.beta_bb.is_continuous` {#beta_bb.is_continuous}
-
-
-
-
-- - -
-
-#### `tf.contrib.distributions.beta_bb.is_reparameterized` {#beta_bb.is_reparameterized}
-
-
-
-
-- - -
-
-#### `tf.contrib.distributions.beta_bb.log_cdf(value, name='log_cdf', **condition_kwargs)` {#beta_bb.log_cdf}
-
-Log cumulative distribution function.
-
-Given random variable `X`, the cumulative distribution function `cdf` is:
-
-```
-log_cdf(x) := Log[ P[X <= x] ]
-```
-
-Often, a numerical approximation can be used for `log_cdf(x)` that yields
-a more accurate answer than simply taking the logarithm of the `cdf` when
-`x << -1`.
-
-
-Additional documentation from `Beta`:
-
-Note that the argument `x` must be a non-negative floating point tensor
-whose shape can be broadcast with `self.a` and `self.b`.  For fixed leading
-dimensions, the last dimension represents counts for the corresponding Beta
-distribution in `self.a` and `self.b`. `x` is only legal if `0 < x < 1`.
-
-##### Args:
-
-
-*  <b>`value`</b>: `float` or `double` `Tensor`.
-*  <b>`name`</b>: The name to give this op.
-*  <b>`**condition_kwargs`</b>: Named arguments forwarded to subclass implementation.
-
-##### Returns:
-
-
-*  <b>`logcdf`</b>: a `Tensor` of shape `sample_shape(x) + self.batch_shape` with
-    values of type `self.dtype`.
-
-
-- - -
-
-#### `tf.contrib.distributions.beta_bb.log_pdf(value, name='log_pdf', **condition_kwargs)` {#beta_bb.log_pdf}
-
-Log probability density function.
-
-##### Args:
-
-
-*  <b>`value`</b>: `float` or `double` `Tensor`.
-*  <b>`name`</b>: The name to give this op.
-*  <b>`**condition_kwargs`</b>: Named arguments forwarded to subclass implementation.
-
-##### Returns:
-
-
-*  <b>`log_prob`</b>: a `Tensor` of shape `sample_shape(x) + self.batch_shape` with
-    values of type `self.dtype`.
-
-##### Raises:
-
-
-*  <b>`TypeError`</b>: if not `is_continuous`.
-
-
-- - -
-
-#### `tf.contrib.distributions.beta_bb.log_pmf(value, name='log_pmf', **condition_kwargs)` {#beta_bb.log_pmf}
-
-Log probability mass function.
-
-##### Args:
-
-
-*  <b>`value`</b>: `float` or `double` `Tensor`.
-*  <b>`name`</b>: The name to give this op.
-*  <b>`**condition_kwargs`</b>: Named arguments forwarded to subclass implementation.
-
-##### Returns:
-
-
-*  <b>`log_pmf`</b>: a `Tensor` of shape `sample_shape(x) + self.batch_shape` with
-    values of type `self.dtype`.
-
-##### Raises:
-
-
-*  <b>`TypeError`</b>: if `is_continuous`.
-
-
-- - -
-
-#### `tf.contrib.distributions.beta_bb.log_prob(value, name='log_prob', **condition_kwargs)` {#beta_bb.log_prob}
-
-Log probability density/mass function (depending on `is_continuous`).
-
-##### Args:
-
-
-*  <b>`value`</b>: `float` or `double` `Tensor`.
-*  <b>`name`</b>: The name to give this op.
-*  <b>`**condition_kwargs`</b>: Named arguments forwarded to subclass implementation.
-
-##### Returns:
-
-
-*  <b>`log_prob`</b>: a `Tensor` of shape `sample_shape(x) + self.batch_shape` with
-    values of type `self.dtype`.
-
-
-- - -
-
-#### `tf.contrib.distributions.beta_bb.log_survival_function(value, name='log_survival_function', **condition_kwargs)` {#beta_bb.log_survival_function}
-
-Log survival function.
-
-Given random variable `X`, the survival function is defined:
-
-```
-log_survival_function(x) = Log[ P[X > x] ]
-                         = Log[ 1 - P[X <= x] ]
-                         = Log[ 1 - cdf(x) ]
-```
-
-Typically, different numerical approximations can be used for the log
-survival function, which are more accurate than `1 - cdf(x)` when `x >> 1`.
-
-##### Args:
-
-
-*  <b>`value`</b>: `float` or `double` `Tensor`.
-*  <b>`name`</b>: The name to give this op.
-*  <b>`**condition_kwargs`</b>: Named arguments forwarded to subclass implementation.
-
-##### Returns:
-
-  `Tensor` of shape `sample_shape(x) + self.batch_shape` with values of type
-    `self.dtype`.
-
-
-- - -
-
-#### `tf.contrib.distributions.beta_bb.mean(name='mean')` {#beta_bb.mean}
-
-Mean.
-
-
-- - -
-
-#### `tf.contrib.distributions.beta_bb.mode(name='mode')` {#beta_bb.mode}
-
-Mode.
-
-Additional documentation from `Beta`:
-
-Note that the mode for the Beta distribution is only defined
-when `a > 1`, `b > 1`. This returns the mode when `a > 1` and `b > 1`,
-and `NaN` otherwise. If `self.allow_nan_stats` is `False`, an exception
-will be raised rather than returning `NaN`.
-
-
-- - -
-
-#### `tf.contrib.distributions.beta_bb.name` {#beta_bb.name}
-
-Name prepended to all ops created by this `Distribution`.
-
-
-- - -
-
-#### `tf.contrib.distributions.beta_bb.param_shapes(cls, sample_shape, name='DistributionParamShapes')` {#beta_bb.param_shapes}
-
-Shapes of parameters given the desired shape of a call to `sample()`.
-
-Subclasses should override static method `_param_shapes`.
-
-##### Args:
-
-
-*  <b>`sample_shape`</b>: `Tensor` or python list/tuple. Desired shape of a call to
-    `sample()`.
-*  <b>`name`</b>: name to prepend ops with.
-
-##### Returns:
-
-  `dict` of parameter name to `Tensor` shapes.
-
-
-- - -
-
-#### `tf.contrib.distributions.beta_bb.param_static_shapes(cls, sample_shape)` {#beta_bb.param_static_shapes}
-
-param_shapes with static (i.e. TensorShape) shapes.
-
-##### Args:
-
-
-*  <b>`sample_shape`</b>: `TensorShape` or python list/tuple. Desired shape of a call
-    to `sample()`.
-
-##### Returns:
-
-  `dict` of parameter name to `TensorShape`.
-
-##### Raises:
-
-
-*  <b>`ValueError`</b>: if `sample_shape` is a `TensorShape` and is not fully defined.
-
-
-- - -
-
-#### `tf.contrib.distributions.beta_bb.parameters` {#beta_bb.parameters}
-
-Dictionary of parameters used to instantiate this `Distribution`.
-
-
-- - -
-
-#### `tf.contrib.distributions.beta_bb.pdf(value, name='pdf', **condition_kwargs)` {#beta_bb.pdf}
-
-Probability density function.
-
-##### Args:
-
-
-*  <b>`value`</b>: `float` or `double` `Tensor`.
-*  <b>`name`</b>: The name to give this op.
-*  <b>`**condition_kwargs`</b>: Named arguments forwarded to subclass implementation.
-
-##### Returns:
-
-
-*  <b>`prob`</b>: a `Tensor` of shape `sample_shape(x) + self.batch_shape` with
-    values of type `self.dtype`.
-
-##### Raises:
-
-
-*  <b>`TypeError`</b>: if not `is_continuous`.
-
-
-- - -
-
-#### `tf.contrib.distributions.beta_bb.pmf(value, name='pmf', **condition_kwargs)` {#beta_bb.pmf}
-
-Probability mass function.
-
-##### Args:
-
-
-*  <b>`value`</b>: `float` or `double` `Tensor`.
-*  <b>`name`</b>: The name to give this op.
-*  <b>`**condition_kwargs`</b>: Named arguments forwarded to subclass implementation.
-
-##### Returns:
-
-
-*  <b>`pmf`</b>: a `Tensor` of shape `sample_shape(x) + self.batch_shape` with
-    values of type `self.dtype`.
-
-##### Raises:
-
-
-*  <b>`TypeError`</b>: if `is_continuous`.
-
-
-- - -
-
-#### `tf.contrib.distributions.beta_bb.prob(value, name='prob', **condition_kwargs)` {#beta_bb.prob}
-
-Probability density/mass function (depending on `is_continuous`).
-
-
-Additional documentation from `Beta`:
-
-Note that the argument `x` must be a non-negative floating point tensor
-whose shape can be broadcast with `self.a` and `self.b`.  For fixed leading
-dimensions, the last dimension represents counts for the corresponding Beta
-distribution in `self.a` and `self.b`. `x` is only legal if `0 < x < 1`.
-
-##### Args:
-
-
-*  <b>`value`</b>: `float` or `double` `Tensor`.
-*  <b>`name`</b>: The name to give this op.
-*  <b>`**condition_kwargs`</b>: Named arguments forwarded to subclass implementation.
-
-##### Returns:
-
-
-*  <b>`prob`</b>: a `Tensor` of shape `sample_shape(x) + self.batch_shape` with
-    values of type `self.dtype`.
-
-
-- - -
-
-#### `tf.contrib.distributions.beta_bb.sample(sample_shape=(), seed=None, name='sample', **condition_kwargs)` {#beta_bb.sample}
-
-Generate samples of the specified shape.
-
-Note that a call to `sample()` without arguments will generate a single
-sample.
-
-##### Args:
-
-
-*  <b>`sample_shape`</b>: 0D or 1D `int32` `Tensor`. Shape of the generated samples.
-*  <b>`seed`</b>: Python integer seed for RNG
-*  <b>`name`</b>: name to give to the op.
-*  <b>`**condition_kwargs`</b>: Named arguments forwarded to subclass implementation.
-
-##### Returns:
-
-
-*  <b>`samples`</b>: a `Tensor` with prepended dimensions `sample_shape`.
-
-
-- - -
-
-#### `tf.contrib.distributions.beta_bb.sample_n(n, seed=None, name='sample_n', **condition_kwargs)` {#beta_bb.sample_n}
-
-Generate `n` samples.
-
-##### Args:
-
-
-*  <b>`n`</b>: `Scalar` `Tensor` of type `int32` or `int64`, the number of
-    observations to sample.
-*  <b>`seed`</b>: Python integer seed for RNG
-*  <b>`name`</b>: name to give to the op.
-*  <b>`**condition_kwargs`</b>: Named arguments forwarded to subclass implementation.
-
-##### Returns:
-
-
-*  <b>`samples`</b>: a `Tensor` with a prepended dimension (n,).
-
-##### Raises:
-
-
-*  <b>`TypeError`</b>: if `n` is not an integer type.
-
-
-- - -
-
-#### `tf.contrib.distributions.beta_bb.std(name='std')` {#beta_bb.std}
-
-Standard deviation.
-
-
-- - -
-
-#### `tf.contrib.distributions.beta_bb.survival_function(value, name='survival_function', **condition_kwargs)` {#beta_bb.survival_function}
-
-Survival function.
-
-Given random variable `X`, the survival function is defined:
-
-```
-survival_function(x) = P[X > x]
-                     = 1 - P[X <= x]
-                     = 1 - cdf(x).
-```
-
-##### Args:
-
-
-*  <b>`value`</b>: `float` or `double` `Tensor`.
-*  <b>`name`</b>: The name to give this op.
-*  <b>`**condition_kwargs`</b>: Named arguments forwarded to subclass implementation.
-
-##### Returns:
-
-  Tensor` of shape `sample_shape(x) + self.batch_shape` with values of type
-    `self.dtype`.
-
-
-- - -
-
-#### `tf.contrib.distributions.beta_bb.validate_args` {#beta_bb.validate_args}
-
-Python boolean indicated possibly expensive checks are enabled.
-
-
-- - -
-
-#### `tf.contrib.distributions.beta_bb.variance(name='variance')` {#beta_bb.variance}
-
-Variance.
 
 
 

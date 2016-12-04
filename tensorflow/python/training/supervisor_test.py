@@ -418,7 +418,7 @@ class SupervisorTest(tf.test.TestCase):
       tf.summary.scalar("c2", tf.constant(2))
       tf.summary.scalar("c3", tf.constant(3))
       summ = tf.summary.merge_all()
-      sw = tf.train.SummaryWriter(logdir)
+      sw = tf.summary.FileWriter(logdir)
       sv = tf.train.Supervisor(logdir="", summary_op=None, summary_writer=sw)
       meta_graph_def = meta_graph.create_meta_graph_def()
       sess = sv.prepare_or_wait_for_session("")
@@ -506,7 +506,7 @@ class SupervisorTest(tf.test.TestCase):
       p = tf.placeholder(tf.float32, shape=(3,))
       v = tf.Variable(p, name="v")
       sv = tf.train.Supervisor(logdir=logdir,
-                               init_op=tf.initialize_all_variables(),
+                               init_op=tf.global_variables_initializer(),
                                init_feed_dict={p: [1.0, 2.0, 3.0]})
       sess = sv.prepare_or_wait_for_session("")
       self.assertAllClose([1.0, 2.0, 3.0], sess.run(v))

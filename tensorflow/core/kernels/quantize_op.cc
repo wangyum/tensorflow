@@ -17,11 +17,12 @@ limitations under the License.
 
 #define EIGEN_USE_THREADS
 
-#include "tensorflow/core/kernels/quantization_utils.h"
 #include "tensorflow/core/framework/op.h"
 #include "tensorflow/core/framework/op_kernel.h"
 #include "tensorflow/core/framework/type_traits.h"
 #include "tensorflow/core/framework/types.h"
+#include "tensorflow/core/kernels/meta_support.h"
+#include "tensorflow/core/kernels/quantization_utils.h"
 #include "tensorflow/core/lib/core/errors.h"
 
 namespace {
@@ -98,8 +99,8 @@ class QuantizeV2Op : public OpKernel {
       // Divide by (max_range - min_range) to get to [0, 1.0]
       // Multiply by range of T, after that shift left 1/2 range of T if
       // T is signed.
-      // Note that std::round is used to round the number before the cast.
-      // std::round implements "round-half-away-zero",
+      // Note that the number is rounded before the cast. Rounding follows the
+      // semantic of std::round, which implements "round-half-away-zero",
       // e.g., -5.5 gets rounded to -6, -5.4 goes to -5, 5.4 goes to 5,
       // and 5.5 goes to 6.
       auto o = output->template flat<T>();
@@ -112,7 +113,7 @@ class QuantizeV2Op : public OpKernel {
               min_range) *
                  scale_factor -
              half_range_)
-                .unaryExpr(std::function<float(float)>(round))
+                .round()
                 .template cast<T>();
       } else {
         // The fast path that avoids unaryExpr
@@ -124,9 +125,15 @@ class QuantizeV2Op : public OpKernel {
                 .template cast<T>();
       }
     } else if (mode_ == QUANTIZE_MODE_MIN_FIRST) {
-      FloatTensorToQuantizedInPlaceUsingEigen<T>(
-          ctx->template eigen_device<Device>(), input, min_range, max_range,
-          output);
+      if (meta::IsSupportedAndEnabled() && std::is_same<T, quint8>()) {
+        auto input_array = input.flat<float>();
+        meta::Quantize(ctx, input_array.data(), input_array.size(), min_range,
+                       max_range, output->flat<quint8>().data());
+      } else {
+        FloatTensorToQuantizedInPlaceUsingEigen<T>(
+            ctx->template eigen_device<Device>(), input, min_range, max_range,
+            output);
+      }
     }
 
     Tensor* output_min_tensor = nullptr;

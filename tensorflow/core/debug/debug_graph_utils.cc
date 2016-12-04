@@ -16,6 +16,7 @@ limitations under the License.
 #include "tensorflow/core/debug/debug_graph_utils.h"
 
 #include "tensorflow/core/common_runtime/memory_types.h"
+#include "tensorflow/core/debug/debug_io_utils.h"
 #include "tensorflow/core/framework/kernel_def.pb.h"
 #include "tensorflow/core/framework/node_def_builder.h"
 #include "tensorflow/core/framework/op_kernel.h"
@@ -23,6 +24,49 @@ limitations under the License.
 #include "tensorflow/core/lib/strings/strcat.h"
 
 namespace tensorflow {
+
+DebuggerState::DebuggerState(
+    const protobuf::RepeatedPtrField<DebugTensorWatch>& watches)
+    : watches(watches), debug_urls_() {
+  for (const DebugTensorWatch& watch : watches) {
+    for (const string& url : watch.debug_urls()) {
+      debug_urls_.insert(url);
+    }
+  }
+}
+
+DebuggerState::~DebuggerState() {
+  for (const string& debug_url : debug_urls_) {
+    DebugIO::CloseDebugURL(debug_url);
+  }
+}
+
+const string DebuggerState::SummarizeDebugTensorWatches() {
+  std::ostringstream oss;
+
+  for (const DebugTensorWatch& watch : watches) {
+    string tensor_name =
+        strings::StrCat(watch.node_name(), ":", watch.output_slot());
+    oss << tensor_name << "|";
+
+    for (const string& debug_op : watch.debug_ops()) {
+      oss << debug_op << ",";
+    }
+
+    oss << "@";
+    for (const string& debug_url : watch.debug_urls()) {
+      oss << debug_url << ",";
+    }
+
+    oss << ";";
+  }
+
+  return oss.str();
+}
+
+Status DebuggerState::InsertNodes(Graph* graph, Device* device) {
+  return DebugNodeInserter::InsertNodes(watches, graph, device);
+}
 
 // static
 Status DebugNodeInserter::InsertNodes(
