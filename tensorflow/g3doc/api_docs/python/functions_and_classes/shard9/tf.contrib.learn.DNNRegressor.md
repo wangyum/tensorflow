@@ -51,7 +51,7 @@ Input of `fit` and `evaluate` should have following features,
     whose `value` is a `Tensor`.
 - - -
 
-#### `tf.contrib.learn.DNNRegressor.__init__(hidden_units, feature_columns, model_dir=None, weight_column_name=None, optimizer=None, activation_fn=relu, dropout=None, gradient_clip_norm=None, enable_centered_bias=False, config=None, feature_engineering_fn=None, label_dimension=1, embedding_lr_multipliers=None)` {#DNNRegressor.__init__}
+#### `tf.contrib.learn.DNNRegressor.__init__(hidden_units, feature_columns, model_dir=None, weight_column_name=None, optimizer=None, activation_fn=relu, dropout=None, gradient_clip_norm=None, enable_centered_bias=False, config=None, feature_engineering_fn=None, label_dimension=1, embedding_lr_multipliers=None, input_layer_min_slice_size=None)` {#DNNRegressor.__init__}
 
 Initializes a `DNNRegressor` instance.
 
@@ -91,6 +91,8 @@ Initializes a `DNNRegressor` instance.
 *  <b>`embedding_lr_multipliers`</b>: Optional. A dictionary from `EbeddingColumn` to
       a `float` multiplier. Multiplier will be used to multiply with
       learning rate for the embedding variables.
+*  <b>`input_layer_min_slice_size`</b>: Optional. The min slice size of input layer
+      partitions. If not provided, will use the default of 64M.
 
 ##### Returns:
 
@@ -106,7 +108,7 @@ Initializes a `DNNRegressor` instance.
 
 - - -
 
-#### `tf.contrib.learn.DNNRegressor.evaluate(x=None, y=None, input_fn=None, feed_fn=None, batch_size=None, steps=None, metrics=None, name=None, checkpoint_path=None)` {#DNNRegressor.evaluate}
+#### `tf.contrib.learn.DNNRegressor.evaluate(x=None, y=None, input_fn=None, feed_fn=None, batch_size=None, steps=None, metrics=None, name=None, checkpoint_path=None, hooks=None)` {#DNNRegressor.evaluate}
 
 See evaluable.Evaluable.
 

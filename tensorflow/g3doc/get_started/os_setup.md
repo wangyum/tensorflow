@@ -858,8 +858,11 @@ default and if you want to limit RAM usage you can add `--local_resources
 ```bash
 $ bazel build -c opt //tensorflow/tools/pip_package:build_pip_package
 
-# To build with GPU support:
+# To build with support for CUDA:
 $ bazel build -c opt --config=cuda //tensorflow/tools/pip_package:build_pip_package
+
+# Alternatively, to build with support for OpenCL:
+$ bazel build -c opt --config=sycl //tensorflow/tools/pip_package:build_pip_package
 
 $ bazel-bin/tensorflow/tools/pip_package/build_pip_package /tmp/tensorflow_pkg
 
@@ -1246,3 +1249,26 @@ RuntimeError: Broken toolchain: cannot link a simple C program
 ```
 
 This is typically because you have the Xcode build tools installed, but you still need to accept the license agreements.  To resolve it, accept the license agreement by opening Xcode, or by running `xcodebuild -license` from the command line.
+
+### Import Error
+When importing tensorflow, you may see an "ImportError" raised.  Below
+are some possible examples and solutions:
+
+```
+ImportError: /lib64/libc.so.6: version `GLIBC_2.16' not found (required by ..._pywrap_tensorflow.so)
+```
+
+This can occur if your operating system libraries are too old for
+our provided pip package binaries.  Solution: Try
+[building from sources](#installing-from-sources).
+
+```
+ImportError: cannot import name pywrap_tensorflow
+```
+
+This can occur if you happen to be in the tensorflow source code directory
+and try to import tensorflow: the order of search path prefers the current
+directory, and so tries to import directly from the source code instead of
+your installed tensorflow package.  Solution: don't import tensorflow
+from the tensorflow source code root directory, if you are.
+

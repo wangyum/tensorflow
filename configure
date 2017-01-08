@@ -145,7 +145,7 @@ while [ "$TF_NEED_CUDA" == "" ]; do
 done
 
 export TF_NEED_CUDA
-export TF_NEED_SYCL
+export TF_NEED_OPENCL
 if [[ "$TF_NEED_CUDA" == "0" ]] && [[ "$TF_NEED_OPENCL" == "0" ]]; then
   echo "Configuration finished"
   bazel_clean_and_fetch
@@ -289,7 +289,11 @@ while true; do
       echo "libcudnn.dylib resolves to libcudnn${TF_CUDNN_EXT}"
     fi
   else
-    TF_CUDNN_EXT=".$TF_CUDNN_VERSION"
+    if [ "$OSNAME" == "Darwin" ]; then
+      TF_CUDNN_EXT=".${TF_CUDNN_VERSION}.dylib"
+    else
+      TF_CUDNN_EXT=".$TF_CUDNN_VERSION"
+    fi
   fi
 
   if is_windows; then
@@ -465,7 +469,6 @@ while true; do
   COMPUTECPP_TOOLKIT_PATH=""
 done
 
-export TF_NEED_OPENCL
 # end of if "$TF_NEED_OPENCL" == "1"
 fi
 

@@ -82,7 +82,7 @@ tf_py_test(
     ],
 )
 
-tf_py_test(
+cuda_py_test(
     name = "benchmark_test",
     size = "small",
     srcs = ["benchmark_test.py"],
@@ -342,6 +342,17 @@ tf_py_test(
 )
 
 tf_py_test(
+    name = "inplace_ops_test",
+    size = "small",
+    srcs = ["inplace_ops_test.py"],
+    additional_deps = [
+        "//tensorflow/python:client_testlib",
+        "//tensorflow/python:errors",
+        "//tensorflow/python:nn_ops",
+    ],
+)
+
+tf_py_test(
     name = "io_ops_test",
     size = "small",
     srcs = ["io_ops_test.py"],
@@ -381,7 +392,7 @@ tf_py_test(
 
 tf_py_test(
     name = "losses_test",
-    size = "small",
+    size = "medium",
     srcs = ["losses_test.py"],
     additional_deps = [
         "//third_party/py/numpy",
