@@ -165,6 +165,7 @@ tf_cuda_library(
         "//tensorflow/core/distributed_runtime:rendezvous_mgr_interface",
         "//tensorflow/core/distributed_runtime:worker_cache",
         "//tensorflow/core/distributed_runtime:worker_env",
+        "//tensorflow/core/distributed_runtime/rdma:rdma_mgr",
         "@grpc//:grpc++_unsecure",
     ],
 )
@@ -270,6 +271,7 @@ cc_library(
         "//tensorflow/core/distributed_runtime:master_session",
         "//tensorflow/core/distributed_runtime:server_lib",
         "//tensorflow/core/distributed_runtime:worker_env",
+        "//tensorflow/core/distributed_runtime/rdma:rdma_rendezvous_mgr",
         "@grpc//:grpc++_unsecure",
     ],
     alwayslink = 1,

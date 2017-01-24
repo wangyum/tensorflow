@@ -30,6 +30,7 @@ limitations under the License.
 #include "tensorflow/core/common_runtime/process_util.h"
 #include "tensorflow/core/common_runtime/step_stats_collector.h"
 #include "tensorflow/core/distributed_runtime/graph_mgr.h"
+#include "tensorflow/core/distributed_runtime/rdma/rdma_mgr.h"
 #include "tensorflow/core/distributed_runtime/rendezvous_mgr_interface.h"
 #include "tensorflow/core/distributed_runtime/rpc/async_service_interface.h"
 #include "tensorflow/core/distributed_runtime/rpc/grpc_call.h"
@@ -138,6 +139,10 @@ class GrpcWorkerService : public AsyncServiceInterface {
 
     ENQUEUE_REQUEST(Logging, false);
     ENQUEUE_REQUEST(Tracing, false);
+
+    for (int i = 0; i < 10; ++i) {
+      ENQUEUE_REQUEST(GetRemoteAddress, false);
+    }
 
     void* tag;
     bool ok;
@@ -259,6 +264,14 @@ class GrpcWorkerService : public AsyncServiceInterface {
       call->SendResponse(ToGrpcStatus(s));
     });
     ENQUEUE_REQUEST(Tracing, false);
+  }
+
+  void GetRemoteAddressHandler(WorkerCall<GetRemoteAddressRequest,
+                                 GetRemoteAddressResponse>* call) {
+    env_->compute_pool->Schedule([this, call]() {
+      DoGetRemoteAddress(call);
+    });
+    ENQUEUE_REQUEST(GetRemoteAddress, false);
   }
 #undef ENQUEUE_REQUEST
 
@@ -496,6 +509,51 @@ class GrpcWorkerService : public AsyncServiceInterface {
   Status DoTracing(WorkerCall<TracingRequest, TracingResponse>* call) {
     // TODO(mrry): Platform-specific tracing support.
     return errors::Unimplemented("Tracing");
+  }
+
+  void DoGetRemoteAddress(WorkerCall<GetRemoteAddressRequest,
+                                 GetRemoteAddressResponse>* call) {
+    // analyzing request
+    // the channel setting part is redundant.
+    string remote_host_name = call->request.host_name();
+    RdmaChannel* rc = env_->rdma_mgr->FindChannel(remote_host_name);
+    RdmaAddress ra;
+    ra.lid = call->request.channel().lid();
+    ra.qpn = call->request.channel().qpn();
+    ra.psn = call->request.channel().psn();
+    rc->SetRemoteAddress(ra, false);
+    rc->Connect();
+    int i = 0;
+    int idx[] = {1, 0, 3, 2};
+    std::vector<RdmaBuffer*> mb(rc->message_buffers());
+    for (const auto& mr : call->request.mr()) {
+      // the connections are crossed, i.e.
+      // local tx_message_buffer <---> remote rx_message_buffer_
+      // local rx_message_buffer <---> remote tx_message_buffer_
+      // local tx_ack_buffer <---> remote rx_ack_buffer_
+      // local rx_ack_buffer <---> remote tx_ack_buffer_
+      // hence idx[] = {1, 0, 3, 2}.
+      RdmaBuffer* rb = mb[idx[i]];
+      RemoteMR rmr;
+      rmr.remote_addr = mr.remote_addr();
+      rmr.rkey = mr.rkey();
+      rb->SetRemoteMR(rmr, false);
+      i++;
+    }
+    CHECK(i == RdmaChannel::kNumMessageBuffers);
+
+    // setting up response
+    call->response.set_host_name(env_->worker_name);
+    Channel* channel_info = call->response.mutable_channel();
+    channel_info->set_lid(rc->self().lid);
+    channel_info->set_qpn(rc->self().qpn);
+    channel_info->set_psn(rc->self().psn);
+    for (int i = 0; i < RdmaChannel::kNumMessageBuffers; i++) {
+      MemoryRegion* mr = call->response.add_mr();
+      mr->set_remote_addr(reinterpret_cast<uint64>(mb[i]->buffer()));
+      mr->set_rkey(mb[i]->self()->rkey);
+    }
+    call->SendResponse(::grpc::Status::OK);
   }
 
   TF_DISALLOW_COPY_AND_ASSIGN(GrpcWorkerService);

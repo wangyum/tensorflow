@@ -29,6 +29,7 @@ class Env;
 class GraphMgr;
 class RendezvousMgrInterface;
 class WorkerCacheInterface;
+class RdmaMgr;
 
 // The worker environment class, which holds a bag of pointers to
 // per-worker singletons.
@@ -55,6 +56,9 @@ struct WorkerEnv {
 
   // A pool of threads for scheduling compute work.
   thread::ThreadPool* compute_pool = nullptr;
+
+  // rdma_mgr keeps track of rdma connections
+  RdmaMgr* rdma_mgr = nullptr;
 };
 
 }  // end namespace tensorflow

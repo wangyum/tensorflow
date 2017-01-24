@@ -28,6 +28,8 @@ limitations under the License.
 #include "tensorflow/core/distributed_runtime/graph_mgr.h"
 #include "tensorflow/core/distributed_runtime/master_env.h"
 #include "tensorflow/core/distributed_runtime/master_session.h"
+#include "tensorflow/core/distributed_runtime/rdma/rdma_mgr.h"
+#include "tensorflow/core/distributed_runtime/rdma/rdma_rendezvous_mgr.h"
 #include "tensorflow/core/distributed_runtime/rpc/async_service_interface.h"
 #include "tensorflow/core/distributed_runtime/rpc/grpc_channel.h"
 #include "tensorflow/core/distributed_runtime/rpc/grpc_master_service.h"
@@ -67,6 +69,10 @@ GrpcServer::~GrpcServer() {
 
   delete worker_env_.rendezvous_mgr;
 
+  if (use_rdma_) {
+    delete worker_env_.rdma_mgr;
+  }
+
   // Do not delete (as these are not owned by the server):
   // - master_env_.env
   // - worker_env_.env
@@ -81,6 +87,12 @@ Status GrpcServer::Init() {
 
   SessionOptions sess_opts;
   sess_opts.config = server_def_.default_session_config();
+
+  if (server_def_.protocol()=="grpc_rdma") {
+    use_rdma_ = true;
+  } else {
+    use_rdma_ = false;
+  }
 
   // Configure shared devices between master and worker.
   string name_prefix =
@@ -192,12 +204,16 @@ Status GrpcServer::Init() {
   // Finish setting up worker environment.
   worker_env_.graph_mgr = new GraphMgr(&worker_env_);
   worker_env_.compute_pool = ComputePool(sess_opts);
-  worker_env_.rendezvous_mgr = new RpcRendezvousMgr(&worker_env_);
-
+  if (use_rdma_) {
+    worker_env_.rendezvous_mgr = new RdmaRendezvousMgr(&worker_env_);
+    worker_env_.rdma_mgr = new RdmaMgr(&worker_env_);
+  } else {
+    worker_env_.rendezvous_mgr = new RpcRendezvousMgr(&worker_env_);
+  }
   return Status::OK();
 }
 
-Status GrpcServer::Start() {
+Status GrpcServer::Start_Internal() {
   mutex_lock l(mu_);
   switch (state_) {
     case NEW: {
@@ -219,6 +235,14 @@ Status GrpcServer::Start() {
     default:
       CHECK(false);
   }
+}
+
+Status GrpcServer::Start() {
+    Status s = Start_Internal();
+    if (s.ok() && use_rdma_) {
+      worker_env_.rdma_mgr->SetupChannels();
+    }
+    return s;
 }
 
 Status GrpcServer::Stop() {
@@ -286,7 +310,8 @@ namespace {
 class GrpcServerFactory : public ServerFactory {
  public:
   bool AcceptsOptions(const ServerDef& server_def) override {
-    return server_def.protocol() == "grpc";
+    return ((server_def.protocol() == "grpc") ||
+            (server_def.protocol() == "grpc_rdma"));
   }
 
   Status NewServer(const ServerDef& server_def,
