@@ -6,6 +6,7 @@ load("@protobuf//:protobuf.bzl", "py_proto_library")
 # configure may change the following lines to True
 WITH_GCP_SUPPORT = False
 WITH_HDFS_SUPPORT = False
+WITH_RDMA_SUPPORT = False
 
 # Appends a suffix to a list of deps.
 def tf_deps(deps, suffix):
@@ -157,4 +158,11 @@ def tf_additional_lib_deps():
     deps.append("//tensorflow/core/platform/cloud:gcs_file_system")
   if WITH_HDFS_SUPPORT:
     deps.append("//tensorflow/core/platform/hadoop:hadoop_file_system")
+  return deps
+
+def tf_rdma_lib_deps():
+  deps = []
+  if WITH_RDMA_SUPPORT:
+    deps.append("//tensorflow/core/distributed_runtime/rdma:rdma_rendezvous_mgr")
+    deps.append("//tensorflow/core/distributed_runtime/rdma:rdma_mgr")
   return deps

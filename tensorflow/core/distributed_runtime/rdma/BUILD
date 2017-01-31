@@ -57,6 +57,7 @@ cc_library(
         "//tensorflow/core/distributed_runtime:worker_env",
         ":rdma_mgr",
     ],
+    copts = ["-DUSE_RDMA"],
 )
 
 cc_library(
@@ -74,6 +75,7 @@ cc_library(
         "//tensorflow/core/distributed_runtime:worker_interface",
         ":rdma",
     ],
+    copts = ["-DUSE_RDMA"],
 )
 
 cc_library(
@@ -89,6 +91,7 @@ cc_library(
         "//tensorflow/core/distributed_runtime:rendezvous_mgr_interface",
         "//tensorflow/core/distributed_runtime:worker_env",
     ],
+    copts = ["-DUSE_RDMA"],
     linkopts = [ 
 	"-libverbs",
     ],

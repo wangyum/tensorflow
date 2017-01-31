@@ -157,6 +157,7 @@ class RdmaBuffer {
     }
     mu_.unlock();
   }
+  void FreeBuffer();
   void EnqueueItem(string Item);
   virtual void SendNextItem(){};
   void CreateCPUBuffer(size_t size, bool lock=true);

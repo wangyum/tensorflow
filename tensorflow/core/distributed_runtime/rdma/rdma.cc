@@ -508,10 +508,17 @@ RdmaBuffer::RdmaBuffer(RdmaChannel* channel, string name)
            : channel_(channel), name_(name) {}
 
 RdmaBuffer::~RdmaBuffer() {
+  CHECK(!ibv_dereg_mr(self_)) << "ibv_dereg_mr failed";
+  FreeBuffer();
+}
+
+void RdmaBuffer::FreeBuffer() {
   if ((buffer_ != nullptr) && buffer_on_host_) {
     free(buffer_);
   }
-  CHECK(!ibv_dereg_mr(self_));
+  // TODO
+  // release buffer if it is on device.
+  // We don't support RDMABuffer on device at this moment.
 }
 
 // Allocate CPU memory for the Rdma buffer
@@ -525,8 +532,11 @@ void RdmaBuffer::CreateCPUBuffer(size_t size, bool lock) {
   if (lock) {
     mu_.lock();
   }
-  // only create a new buffer when the buffer was not set.
-  CHECK(local_status_ == none) << "free the existing buffer first";
+  if (local_status_ != none) {
+    // delete existing buffer
+    CHECK(!ibv_dereg_mr(self_)) << "ibv_dereg_mr failed";
+    FreeBuffer();
+  }
   size_ = size;
   buffer_ = malloc(size_);
   self_ = ibv_reg_mr(channel_->adapter_->pd_, 
@@ -683,7 +693,6 @@ void RdmaTensorBuffer::SendNextItem() {
       CHECK(s.ok())<< "dst device not found";
       AllocatorAttributes dst_alloc_attr;
       dst_alloc_attr.set_on_host(true);
-      DeviceContext* recv_dev_context = nullptr;
       // string tensor needs to be serialized
       if (src_dev->tensorflow_gpu_device_info() && 
               (!send_args.alloc_attrs.on_host())) {
@@ -713,8 +722,14 @@ void RdmaTensorBuffer::SendNextItem() {
       rm.tensor_bytes_ = tensor_bytes;
       rm.buffer_size_ = buffer_size;
       mu_.lock();
-      if (local_status_ == none) {
-        // no buffer, create local one first
+      if (local_status_ == none || 
+          (buffer_size > size_ &&
+           local_status_ == idle &&
+           remote_status_ == idle)) {
+        if ((local_status_ != none) && (buffer_size > size_)) {
+            CHECK(rm.data_type_ == DT_STRING)
+                    << "Only string tensor allows to change size";
+        }
         CreateCPUBuffer(buffer_size, false);
         mu_.unlock();
         // put back the key since it is not sent;
@@ -733,10 +748,12 @@ void RdmaTensorBuffer::SendNextItem() {
         // local/remote_status_ won't be set back to idle 
         // unitl Write() is successful
         mu_.unlock();
-        CHECK(buffer_size == size_) << "tensor and buffer size do not agree!"
-                <<" buffer_size = " << size_ 
+        CHECK((buffer_size == size_ && rm.data_type_ != DT_STRING) ||
+              (buffer_size <= size_ && rm.data_type_ == DT_STRING))
+                << "tensor and buffer size do not agree!"
+                << " buffer_size = " << size_ 
                 << " requested tensor size = " << buffer_size 
-                << " tensor name " << rm.name_;
+                << in.DebugString();
         uint32_t imm_data = LookupBufferIndex(key);
         rm.type_ = RDMA_MESSAGE_TENSOR_WRITE;
         string message = RdmaMessage::CreateMessage(rm);

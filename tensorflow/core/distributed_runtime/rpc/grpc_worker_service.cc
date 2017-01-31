@@ -30,7 +30,9 @@ limitations under the License.
 #include "tensorflow/core/common_runtime/process_util.h"
 #include "tensorflow/core/common_runtime/step_stats_collector.h"
 #include "tensorflow/core/distributed_runtime/graph_mgr.h"
+#ifdef USE_RDMA
 #include "tensorflow/core/distributed_runtime/rdma/rdma_mgr.h"
+#endif
 #include "tensorflow/core/distributed_runtime/rendezvous_mgr_interface.h"
 #include "tensorflow/core/distributed_runtime/rpc/async_service_interface.h"
 #include "tensorflow/core/distributed_runtime/rpc/grpc_call.h"
@@ -513,6 +515,7 @@ class GrpcWorkerService : public AsyncServiceInterface {
 
   void DoGetRemoteAddress(WorkerCall<GetRemoteAddressRequest,
                                  GetRemoteAddressResponse>* call) {
+#ifdef USE_RDMA
     // analyzing request
     // the channel setting part is redundant.
     string remote_host_name = call->request.host_name();
@@ -554,6 +557,7 @@ class GrpcWorkerService : public AsyncServiceInterface {
       mr->set_rkey(mb[i]->self()->rkey);
     }
     call->SendResponse(::grpc::Status::OK);
+#endif
   }
 
   TF_DISALLOW_COPY_AND_ASSIGN(GrpcWorkerService);
