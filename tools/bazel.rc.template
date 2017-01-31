@@ -5,6 +5,8 @@ build:win-cuda --define=using_cuda=true --define=using_cuda_nvcc=true
 build:sycl --crosstool_top=@local_config_sycl//crosstool:toolchain
 build:sycl --define=using_sycl=true
 
+build:rdma --define=using_rdma=true
+
 build --force_python=py$PYTHON_MAJOR_VERSION
 build --host_force_python=py$PYTHON_MAJOR_VERSION
 build --python$PYTHON_MAJOR_VERSION_path=$PYTHON_BINARY

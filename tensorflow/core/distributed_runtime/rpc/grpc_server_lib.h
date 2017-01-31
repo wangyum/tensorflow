@@ -99,9 +99,10 @@ class GrpcServer : public ServerInterface {
   std::unique_ptr<Thread> worker_thread_ GUARDED_BY(mu_);
 
   std::unique_ptr<::grpc::Server> server_ GUARDED_BY(mu_);
-
+#ifdef USE_RDMA
   // Whether to use rdma for tensor data transfers
   bool use_rdma_;
+#endif
 };
 
 }  // namespace tensorflow

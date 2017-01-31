@@ -79,7 +79,6 @@ void RdmaRemoteRendezvous::RecvFromRemoteAsync(
       }
       AllocatorAttributes src_alloc_attr;
       src_alloc_attr.set_on_host(true);
-      DeviceContext* src_dev_context = nullptr;              
       RdmaBuffer* rb = rc->FindBuffer(key);
       RdmaMessage rm;
       CHECK(rb->size_ >= RdmaMessage::kMessageTotalBytes);
@@ -91,8 +90,8 @@ void RdmaRemoteRendezvous::RecvFromRemoteAsync(
               RdmaMessage::kTensorBufferStartIndex;
         TensorProto proto;
         CHECK(rm.tensor_bytes_ + RdmaMessage::kTensorBufferStartIndex <= rb->size_);
-        CHECK(proto.ParseFromArray(input, rm.tensor_bytes_))
-                << "proto parse from array";
+        CHECK(ParseProtoUnlimited(&proto, input, rm.tensor_bytes_))
+                << "fail to parse proto from array";
         s = dst_dev->MakeTensorFromProto(proto,
                        recv_args.alloc_attrs, &val);
       }

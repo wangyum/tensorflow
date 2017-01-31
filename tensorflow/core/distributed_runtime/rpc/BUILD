@@ -36,6 +36,7 @@ load("//tensorflow:tensorflow.bzl", "tf_cuda_cc_tests")
 load(
     "//tensorflow/core:platform/default/build_config.bzl",
     "tf_kernel_tests_linkstatic",
+    "tf_rdma_lib_deps",
 )
 load(
     "//tensorflow/core:platform/default/build_config_root.bzl",
@@ -45,6 +46,13 @@ load(
 package(default_visibility = [
     "//tensorflow:internal",
 ])
+
+config_setting(
+    name = "using_rdma",
+    values = {
+        "define": "using_rdma=true"
+    },
+)
 
 cc_library(
     name = "grpc_util",
@@ -165,9 +173,11 @@ tf_cuda_library(
         "//tensorflow/core/distributed_runtime:rendezvous_mgr_interface",
         "//tensorflow/core/distributed_runtime:worker_cache",
         "//tensorflow/core/distributed_runtime:worker_env",
-        "//tensorflow/core/distributed_runtime/rdma:rdma_mgr",
         "@grpc//:grpc++_unsecure",
-    ],
+    ] + tf_rdma_lib_deps(),
+    copts = select({
+        ":using_rdma": ["-DUSE_RDMA"],
+        "//conditions:default": []}),
 )
 
 cc_library(
@@ -271,9 +281,11 @@ cc_library(
         "//tensorflow/core/distributed_runtime:master_session",
         "//tensorflow/core/distributed_runtime:server_lib",
         "//tensorflow/core/distributed_runtime:worker_env",
-        "//tensorflow/core/distributed_runtime/rdma:rdma_rendezvous_mgr",
         "@grpc//:grpc++_unsecure",
-    ],
+    ] + tf_rdma_lib_deps(),
+    copts = select({
+        ":using_rdma": ["-DUSE_RDMA"],
+        "//conditions:default": []}),
     alwayslink = 1,
 )
 
