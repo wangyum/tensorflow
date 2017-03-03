@@ -27,6 +27,7 @@ limitations under the License.
 #include "tensorflow/core/platform/posix/error.h"
 #include "third_party/hadoop/hdfs.h"
 
+
 namespace tensorflow {
 
 template <typename R, typename... Args>
@@ -104,14 +105,30 @@ class LibHDFS {
 
     // libhdfs.so won't be in the standard locations. Use the path as specified
     // in the libhdfs documentation.
+    #if defined(PLATFORM_WINDOWS)
+        const char *kLibHdfsDso = "hdfs.dll";
+    #else
+        const char *kLibHdfsDso = "libhdfs.so";
+    #endif
     char* hdfs_home = getenv("HADOOP_HDFS_HOME");
     if (hdfs_home == nullptr) {
       status_ = errors::FailedPrecondition(
           "Environment variable HADOOP_HDFS_HOME not set");
       return;
     }
-    string path = io::JoinPath(hdfs_home, "lib", "native", "libhdfs.so");
+    string path = io::JoinPath(hdfs_home, "lib", "native", kLibHdfsDso);
     status_ = TryLoadAndBind(path.c_str(), &handle_);
+    if (!status_.ok()) {
+      printf("Load from non-standard location")
+      // try load libhdfs.so using dynamic loader's search path in case libhdfs.so
+      // is installed in non-standard location
+      status_ = TryLoadAndBind(kLibHdfsDso, &handle_);
+    }
+     if (!status_.ok()) {
+      printf("Load from CDH location")
+      string cdhPath = io::JoinPath("/opt/cloudera/parcels/CDH/lib64", kLibHdfsDso);
+      status_ = TryLoadAndBind(cdhPath.c_str(), &handle_);
+    }
     return;
   }
 
