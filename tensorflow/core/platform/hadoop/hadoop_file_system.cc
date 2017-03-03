@@ -119,13 +119,13 @@ class LibHDFS {
     string path = io::JoinPath(hdfs_home, "lib", "native", kLibHdfsDso);
     status_ = TryLoadAndBind(path.c_str(), &handle_);
     if (!status_.ok()) {
-      printf("Load from non-standard location")
+      printf("Load from non-standard location");
       // try load libhdfs.so using dynamic loader's search path in case libhdfs.so
       // is installed in non-standard location
       status_ = TryLoadAndBind(kLibHdfsDso, &handle_);
     }
      if (!status_.ok()) {
-      printf("Load from CDH location")
+      printf("Load from CDH location");
       string cdhPath = io::JoinPath("/opt/cloudera/parcels/CDH/lib64", kLibHdfsDso);
       status_ = TryLoadAndBind(cdhPath.c_str(), &handle_);
     }
