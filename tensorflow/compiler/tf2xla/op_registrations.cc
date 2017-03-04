@@ -169,6 +169,8 @@ REGISTER_XLA_KERNEL(DEVICE_CPU_XLA_JIT,
 REGISTER_XLA_KERNEL(DEVICE_CPU_XLA_JIT,
                     Name("NotEqual").TypeConstraint("T", kCpuNumericTypes));
 REGISTER_XLA_KERNEL(DEVICE_CPU_XLA_JIT,
+                    Name("OneHot").TypeConstraint("T", kCpuAllTypes));
+REGISTER_XLA_KERNEL(DEVICE_CPU_XLA_JIT,
                     Name("Pack").TypeConstraint("T", kCpuAllTypes));
 REGISTER_XLA_KERNEL(DEVICE_CPU_XLA_JIT,
                     Name("Pad").TypeConstraint("T", kCpuAllTypes));
@@ -239,6 +241,10 @@ REGISTER_XLA_KERNEL(DEVICE_CPU_XLA_JIT,
                         .TypeConstraint("Ta", kCpuFloatTypes)
                         .TypeConstraint("Tb", kCpuFloatTypes));
 REGISTER_XLA_KERNEL(DEVICE_CPU_XLA_JIT,
+                    Name("SparseSoftmaxCrossEntropyWithLogits")
+                        .TypeConstraint("T", kCpuFloatTypes)
+                        .TypeConstraint("Tlabels", kCpuIntTypes));
+REGISTER_XLA_KERNEL(DEVICE_CPU_XLA_JIT,
                     Name("Split").TypeConstraint("T", kCpuAllTypes));
 REGISTER_XLA_KERNEL(DEVICE_CPU_XLA_JIT,
                     Name("SplitV").TypeConstraint("T", kCpuAllTypes));
@@ -276,6 +282,7 @@ REGISTER_XLA_KERNEL(DEVICE_CPU_XLA_JIT,
                     Name("TruncateMod").TypeConstraint("T", kCpuNumericTypes));
 REGISTER_XLA_KERNEL(DEVICE_CPU_XLA_JIT,
                     Name("Unpack").TypeConstraint("T", kCpuAllTypes));
+REGISTER_XLA_KERNEL(DEVICE_CPU_XLA_JIT, Name("VarIsInitializedOp"));
 REGISTER_XLA_KERNEL(DEVICE_CPU_XLA_JIT,
                     Name("ZerosLike").TypeConstraint("T", kCpuNumericTypes));
 
@@ -432,6 +439,8 @@ REGISTER_XLA_KERNEL(DEVICE_GPU_XLA_JIT,
 REGISTER_XLA_KERNEL(DEVICE_GPU_XLA_JIT,
                     Name("NotEqual").TypeConstraint("T", kGpuNumericTypes));
 REGISTER_XLA_KERNEL(DEVICE_GPU_XLA_JIT,
+                    Name("OneHot").TypeConstraint("T", kGpuAllTypes));
+REGISTER_XLA_KERNEL(DEVICE_GPU_XLA_JIT,
                     Name("Pack").TypeConstraint("T", kGpuAllTypes));
 REGISTER_XLA_KERNEL(DEVICE_GPU_XLA_JIT,
                     Name("Pad").TypeConstraint("T", kGpuAllTypes));
@@ -499,6 +508,10 @@ REGISTER_XLA_KERNEL(DEVICE_GPU_XLA_JIT,
                         .TypeConstraint("Ta", kGpuFloatTypes)
                         .TypeConstraint("Tb", kGpuFloatTypes));
 REGISTER_XLA_KERNEL(DEVICE_GPU_XLA_JIT,
+                    Name("SparseSoftmaxCrossEntropyWithLogits")
+                        .TypeConstraint("T", kGpuFloatTypes)
+                        .TypeConstraint("Tlabels", kGpuIntTypes));
+REGISTER_XLA_KERNEL(DEVICE_GPU_XLA_JIT,
                     Name("Split").TypeConstraint("T", kGpuAllTypes));
 REGISTER_XLA_KERNEL(DEVICE_GPU_XLA_JIT,
                     Name("SplitV").TypeConstraint("T", kGpuAllTypes));
@@ -536,6 +549,7 @@ REGISTER_XLA_KERNEL(DEVICE_GPU_XLA_JIT,
                     Name("TruncateMod").TypeConstraint("T", kGpuNumericTypes));
 REGISTER_XLA_KERNEL(DEVICE_GPU_XLA_JIT,
                     Name("Unpack").TypeConstraint("T", kGpuAllTypes));
+REGISTER_XLA_KERNEL(DEVICE_GPU_XLA_JIT, Name("VarIsInitializedOp"));
 REGISTER_XLA_KERNEL(DEVICE_GPU_XLA_JIT,
                     Name("ZerosLike").TypeConstraint("T", kGpuNumericTypes));
 
