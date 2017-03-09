@@ -262,7 +262,7 @@ class HDFSWritableFile : public WritableFile {
 
   ~HDFSWritableFile() override {
     if (file_ != nullptr) {
-      Close().IgnoreError();
+      Close();
     }
   }
 
