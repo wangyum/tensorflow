@@ -74,11 +74,11 @@ def tf_workspace(path_prefix = "", tf_repo_name = ""):
   native.new_http_archive(
       name = "eigen_archive",
       urls = [
-          "http://bazel-mirror.storage.googleapis.com/bitbucket.org/eigen/eigen/get/ef6d89748176.tar.gz",
-          "https://bitbucket.org/eigen/eigen/get/ef6d89748176.tar.gz",
+          "http://bazel-mirror.storage.googleapis.com/bitbucket.org/eigen/eigen/get/174e09eed96c.tar.gz",
+          "https://bitbucket.org/eigen/eigen/get/174e09eed96c.tar.gz",
       ],
-      sha256 = "69ad6e0c2229f92c1ce1b697a6ecd6bd57357573ca0f0adc29161b3d80ddfdd8",
-      strip_prefix = "eigen-eigen-ef6d89748176",
+      sha256 = "38d4bda36435cd40e5235887cca8f108f8125d5a28eac471555efdf9d259020f",
+      strip_prefix = "eigen-eigen-174e09eed96c",
       build_file = str(Label("//third_party:eigen.BUILD")),
   )
 
@@ -231,11 +231,11 @@ def tf_workspace(path_prefix = "", tf_repo_name = ""):
   native.new_http_archive(
       name = "gmock_archive",
       urls = [
-          "http://bazel-mirror.storage.googleapis.com/pkgs.fedoraproject.org/repo/pkgs/gmock/gmock-1.7.0.zip/073b984d8798ea1594f5e44d85b20d66/gmock-1.7.0.zip",
-          "http://pkgs.fedoraproject.org/repo/pkgs/gmock/gmock-1.7.0.zip/073b984d8798ea1594f5e44d85b20d66/gmock-1.7.0.zip",
+          "http://bazel-mirror.storage.googleapis.com/github.com/google/googletest/archive/release-1.8.0.zip",
+          "https://github.com/google/googletest/archive/release-1.8.0.zip",
       ],
-      sha256 = "26fcbb5925b74ad5fc8c26b0495dfc96353f4d553492eb97e85a8a6d2f43095b",
-      strip_prefix = "gmock-1.7.0",
+      sha256 = "f3ed3b58511efd272eb074a3a6d6fb79d7c2e6a0e374323d1e6bcbcc1ef141bf",
+      strip_prefix = "googletest-release-1.8.0",
       build_file = str(Label("//third_party:gmock.BUILD")),
   )
 
@@ -501,8 +501,6 @@ def tf_workspace(path_prefix = "", tf_repo_name = ""):
           "node",
           "node.exe",
       ],
-      # POSTED: Email jart@google.com before changing this whitelist.
-      visibility = ["@com_microsoft_typescript//:__pkg__"],
   )
 
   filegroup_external(
