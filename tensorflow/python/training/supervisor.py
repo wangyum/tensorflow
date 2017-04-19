@@ -890,6 +890,10 @@ class Supervisor(object):
     # In that case all Variables must have their device set.
     if not self._is_chief:
       for op in self._graph.get_operations():
+        print("######op.type####")
+        print(op.type)
+        print(op.device)
+        print(not op.device)
         if op.type == "Variable" and not op.device:
           raise ValueError("When using replicas, all Variables must have "
                            "their device set: %s" % op)
