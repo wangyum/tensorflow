@@ -120,13 +120,13 @@ class GrpcWorkerService : public AsyncServiceInterface {
 
     // TODO(mrry): Determine a better policy for enqueuing the appropriate
     // number of each request type.
-    for (int i = 0; i < 1000; ++i) {
+    for (int i = 0; i < 10000; ++i) {
       EnqueueRecvTensorRequestRaw();
     }
-    for (int i = 0; i < 100; ++i) {
+    for (int i = 0; i < 1000; ++i) {
       ENQUEUE_REQUEST(RunGraph, true);
     }
-    for (int i = 0; i < 100; ++i) {
+    for (int i = 0; i < 1000; ++i) {
       ENQUEUE_REQUEST(CleanupGraph, false);
     }
 
